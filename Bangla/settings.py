@@ -44,6 +44,7 @@ DJANGO_APPS = [
 LOCAL_APPS = [
     "core",
     "common",
+    "events",
 ]
 
 THIRD_PARTY_APPS = [
@@ -72,7 +73,6 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_THROTTLING_CLASSES": (
         "rest_framework.throttling.UserRateThrottle",
-        "store.throttle.AuthenticatedScopeRateThrottle"
     ),
     "DEFAULT_THROTTLE_RATES": {
         'user': '50/minute',
@@ -214,6 +214,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 # Email settings for SSL(Mainly for development and tests)
+EMAIL_USE_TLS = False
 
 EMAIL_USE_SSL = True
 

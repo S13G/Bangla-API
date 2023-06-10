@@ -20,6 +20,8 @@ INSTALLED_APPS.remove("debug_toolbar")
 
 EMAIL_USE_TLS = True
 
+EMAIL_USE_SSL = False
+
 EMAIL_HOST = "smtp.gmail.com"
 
 EMAIL_HOST_USER = config("EMAIL_HOST_USER")
