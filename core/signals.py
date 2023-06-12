@@ -20,3 +20,13 @@ def handle_user_account_deletion(sender, instance, **kwargs):
         user.delete()
     except User.DoesNotExist:
         pass
+
+
+@receiver(post_save, sender=Profile)
+def handle_user_account_update(sender, instance, created, **kwargs):
+    if not created:
+        profile = instance
+        user = profile.user
+        user.email = profile.email_address
+        user.full_name = profile.full_name
+        user.save()

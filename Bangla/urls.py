@@ -22,7 +22,8 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 # Version 1 URLs
 urlpatterns_v1 = [
-    path("account/", include("core.urls")),  # Example endpoint from version 1
+    path("account/", include("core.urls")),
+    path("ads/", include("ads.urls")),
 ]
 urlpatterns = [
     path("schema/", SpectacularAPIView.as_view(), name="schema"),

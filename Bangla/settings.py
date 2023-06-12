@@ -44,7 +44,7 @@ DJANGO_APPS = [
 LOCAL_APPS = [
     "core",
     "common",
-    "events",
+    "ads",
 ]
 
 THIRD_PARTY_APPS = [

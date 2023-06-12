@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from core.forms import CustomUserChangeForm, CustomUserCreationForm
-from core.models import Profile, User
+from core.models import MatrimonialProfile, Profile, User
 
 
 class CustomUserAdmin(UserAdmin):
@@ -14,8 +14,6 @@ class CustomUserAdmin(UserAdmin):
         "full_name",
         "is_staff",
         "is_active",
-        "is_verified",
-        "email_changed",
     )
     list_filter = (
         "email",
@@ -31,8 +29,6 @@ class CustomUserAdmin(UserAdmin):
                     "email",
                     "full_name",
                     "password",
-                    "email_changed",
-                    "is_verified",
                 )
             },
         ),
@@ -67,10 +63,8 @@ class CustomUserAdmin(UserAdmin):
 class ProfileAdmin(admin.ModelAdmin):
     list_display = (
         "full_name",
-        "location",
+        "country",
         "email_address",
-        "gender",
-        "phone_number",
     )
     ordering = ("user__email",)
     search_fields = ("email_address",)
@@ -85,3 +79,4 @@ class ProfileAdmin(admin.ModelAdmin):
 
 
 admin.site.register(User, CustomUserAdmin)
+admin.site.register(MatrimonialProfile)

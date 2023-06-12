@@ -1,21 +1,13 @@
-from datetime import timedelta
-from uuid import uuid4
-from django_countries.fields import CountryField
-
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django_countries.fields import CountryField
 
 from common.models import BaseModel
 from core.choices import GENDER_CHOICES
 from core.validators import validate_phone_number
 from .managers import CustomUserManager
-
-
-def upload_path(instance, filename):
-    # File will be uploaded to MEDIA_ROOT/customer/instance_id/<filename>
-    return f"customer_profile/{filename}"
 
 
 class User(BaseModel, AbstractUser):
@@ -24,15 +16,6 @@ class User(BaseModel, AbstractUser):
     last_name = None
     full_name = models.CharField(max_length=255, null=True)
     email = models.EmailField(unique=True)
-    email_changed = models.BooleanField(
-            default=False, help_text=_("Indicates whether the user has changed their email.")
-    )
-    is_verified = models.BooleanField(
-            default=False, help_text=_("Indicates whether the user's email is verified.")
-    )
-    is_modified = models.DateTimeField(
-            default=None, null=True, editable=False, help_text=_("Indicates the date the user email was changed.")
-    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["full_name"]
@@ -42,14 +25,6 @@ class User(BaseModel, AbstractUser):
     class Meta:
         verbose_name = "User"
         verbose_name_plural = "Users"
-
-    def save(self, *args, **kwargs):
-        if self.email_changed and not self.is_modified:
-            self.is_modified = timezone.now()
-        elif self.email_changed and self.is_modified + timedelta(days=10) <= timezone.now():
-            self.email_changed = False
-
-        super().save(*args, **kwargs)
 
 
 class Otp(BaseModel):
@@ -80,12 +55,12 @@ class Otp(BaseModel):
 class Profile(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile",
                                 help_text=_("The user associated with this profile."))
-    location = CountryField(null=True)
-    gender = models.CharField(choices=GENDER_CHOICES, max_length=1, help_text=_("The gender of the user."))
-    birthday = models.DateField(null=True, help_text=_("The birthday of the user."))
+    description = models.TextField(blank=True)
+    country = CountryField(null=True)
+    language = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20, validators=[validate_phone_number],
                                     help_text=_("The phone number of the user."))
-    _avatar = models.ImageField(upload_to=upload_path, help_text=_("The avatar image of the user."))
+    _avatar = models.ImageField(upload_to="customer_image/", help_text=_("The avatar image of the user."))
 
     class Meta:
         verbose_name = "Profile"
@@ -96,6 +71,45 @@ class Profile(BaseModel):
 
     @property
     def avatar(self):
+        if self._avatar is not None:
+            return self._avatar.url
+        return None
+
+    @property
+    def email_address(self):
+        return self.user.email
+
+    @property
+    def full_name(self):
+        return self.user.full_name
+
+
+class MatrimonialProfile(BaseModel):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="matrimonial_profile")
+    _avatar = models.ImageField(upload_to="customer_matrimonial_profile/")
+    short_bio = models.TextField(blank=True)
+    age = models.PositiveIntegerField()
+    gender = models.CharField(max_length=255, choices=GENDER_CHOICES)
+    height = models.CharField(max_length=255, blank=True)
+    country = CountryField(null=True)
+    city = models.CharField(max_length=255, blank=True)
+    caste = models.CharField(max_length=255, blank=True)
+    birthday = models.DateField(blank=True)
+    education = models.CharField(max_length=255, blank=True)
+    language = models.CharField(max_length=255, null=True, blank=True)
+    phone_number = models.CharField(max_length=20, validators=[validate_phone_number],
+                                    help_text=_("The phone number of the user."))
+    profession = models.CharField(max_length=255, blank=True)
+    income = models.PositiveIntegerField(blank=True)
+
+    class Meta:
+        verbose_name_plural = "Matrimonial Profiles"
+
+    def __str__(self):
+        return self.user.full_name
+
+    @property
+    def matrimonial_avatar(self):
         if self._avatar is not None:
             return self._avatar.url
         return None

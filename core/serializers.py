@@ -2,33 +2,11 @@ import re
 
 from django.core.validators import FileExtensionValidator
 from django.core.validators import validate_email
+from django_countries.serializer_fields import CountryField
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from core.choices import GENDER_CHOICES
 from core.models import User
-
-
-class ChangeEmailSerializer(serializers.Serializer):
-    code = serializers.IntegerField()
-    email = serializers.EmailField()
-
-    def validate(self, attrs):
-        code = attrs.get('code')
-        email = attrs.get('email')
-
-        if not code:
-            raise serializers.ValidationError({"message": "Code is required", "status": "failed"})
-
-        if not re.match("^[0-9]{4}$", str(code)):
-            raise serializers.ValidationError({"message": "Code must be 4-digit number", "status": "failed"})
-
-        try:
-            validate_email(email)
-        except ValidationError:
-            raise serializers.ValidationError({"message": "Invalid email format", "status": "failed"})
-
-        return attrs
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -63,13 +41,11 @@ class LoginSerializer(serializers.Serializer):
 
 
 class ProfileSerializer(serializers.Serializer):
-    email = serializers.EmailField(source="user.email")
-    location = serializers.CharField()
     full_name = serializers.CharField(source="user.full_name")
-    gender = serializers.ChoiceField(choices=GENDER_CHOICES)
-    birthday = serializers.DateField()
-    phone_number = serializers.CharField(max_length=20)
+    email = serializers.EmailField(source="user.email")
     _avatar = serializers.ImageField(validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])])
+    country = CountryField()
+    phone_number = serializers.CharField(max_length=20)
 
     def validate__avatar(self, attrs):
         avatar = attrs.get('_avatar')
@@ -111,32 +87,6 @@ class RegisterSerializer(serializers.Serializer):
         return User.objects.create_user(**validated_data)
 
 
-class RequestEmailChangeCodeSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-
-    def validate(self, attrs):
-        email = attrs.get('email')
-
-        try:
-            validate_email(email)
-        except ValidationError:
-            raise serializers.ValidationError({"message": "Invalid email format", "status": "failed"})
-        return attrs
-
-
-class ResendEmailVerificationSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-
-    def validate(self, attrs):
-        email = attrs.get('email')
-
-        try:
-            validate_email(email)
-        except ValidationError:
-            raise serializers.ValidationError({"message": "Invalid email format", "status": "failed"})
-        return attrs
-
-
 class RequestNewPasswordCodeSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
@@ -151,12 +101,13 @@ class RequestNewPasswordCodeSerializer(serializers.Serializer):
 
 
 class UpdateProfileSerializer(serializers.Serializer):
+    full_name = serializers.CharField(source="user.full_name")
+    email = serializers.EmailField(source="user.email")
     _avatar = serializers.ImageField(validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])])
-    birthday = serializers.DateField()
-    email = serializers.EmailField(read_only=True)
-    full_name = serializers.CharField(max_length=255)
-    gender = serializers.ChoiceField(choices=GENDER_CHOICES)
-    phone_number = serializers.CharField(max_length=20)
+    description = serializers.CharField()
+    country = CountryField()
+    language = serializers.CharField()
+    phone_number = serializers.CharField()
 
     def validate_phone_number(self, value):
         phone_number = value
@@ -179,25 +130,3 @@ class UpdateProfileSerializer(serializers.Serializer):
             setattr(instance, field, value)
             instance.save()
         return instance
-
-
-class VerifySerializer(serializers.Serializer):
-    code = serializers.IntegerField()
-    email = serializers.EmailField()
-
-    def validate(self, attrs):
-        code = attrs.get('code')
-        email = attrs.get('email')
-
-        if not code:
-            raise serializers.ValidationError({"message": "Code is required", "status": "failed"})
-
-        if not re.match("^[0-9]{4}$", str(code)):
-            raise serializers.ValidationError({"message": "Code must be a 4-digit number", "status": "failed"})
-
-        try:
-            validate_email(email)
-        except ValidationError:
-            raise serializers.ValidationError({"message": "Invalid email format", "status": "failed"})
-
-        return attrs

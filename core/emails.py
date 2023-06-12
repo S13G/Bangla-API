@@ -37,11 +37,6 @@ class Util:
         t.start()
 
     @staticmethod
-    def email_change(user):
-        t = threading.Thread(target=send_otp_email, args=(user, 'Change Your Email', 'email_change.html', 10))
-        t.start()
-
-    @staticmethod
     def email_verified(user):
         context = {'full_name': user.full_name}
         message = render_to_string("verification_email.html", context)
