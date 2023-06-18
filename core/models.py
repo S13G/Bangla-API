@@ -16,9 +16,13 @@ class User(BaseModel, AbstractUser):
     last_name = None
     full_name = models.CharField(max_length=255, null=True)
     email = models.EmailField(unique=True)
+    phone_number = models.CharField(max_length=20, validators=[validate_phone_number], null=True)
+    is_verified = models.BooleanField(
+            default=False, help_text=_("Indicates whether the user's email is verified.")
+    )
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["full_name"]
+    REQUIRED_FIELDS = ["full_name", "phone_number"]
 
     objects = CustomUserManager()
 
@@ -58,8 +62,6 @@ class Profile(BaseModel):
     description = models.TextField(blank=True)
     country = CountryField(null=True)
     language = models.CharField(max_length=255)
-    phone_number = models.CharField(max_length=20, validators=[validate_phone_number],
-                                    help_text=_("The phone number of the user."))
     _avatar = models.ImageField(upload_to="customer_image/", help_text=_("The avatar image of the user."))
 
     class Meta:
@@ -97,8 +99,6 @@ class MatrimonialProfile(BaseModel):
     birthday = models.DateField(blank=True)
     education = models.CharField(max_length=255, blank=True)
     language = models.CharField(max_length=255, null=True, blank=True)
-    phone_number = models.CharField(max_length=20, validators=[validate_phone_number],
-                                    help_text=_("The phone number of the user."))
     profession = models.CharField(max_length=255, blank=True)
     income = models.PositiveIntegerField(blank=True)
 

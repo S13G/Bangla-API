@@ -228,11 +228,122 @@ EMAIL_PORT = 465
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-# JAZZMIN
+# JAZZMIN CONFIG
+JAZZMIN_SETTINGS = {
+    "site_brand": "BANGLA ADMIN",
+    # title of the window (Will default to current_admin_site.site_title if absent or None)
+    "site_title": "Bangla ADMIN",
+    # Title on the login screen (19 chars max) (defaults to current_admin_site.site_header if absent or None)
+    "site_header": "Bangla",
+    # Logo to use for your site, must be present in static files, used for brand on top left
+    "site_logo": "../static/logo.png",
+    # Logo to use for your site, must be present in static files, used for login form logo (defaults to site_logo)
+    "login_logo": "../static/logo.png",
+    # CSS classes that are applied to the logo above
+    "site_logo_classes": "img-circle",
+    # Relative path to a favicon for your site, will default to site_logo if absent (ideally 32x32 px)
+    "site_icon": "../static/logo.png",
+    # Welcome text on the login screen
+    "welcome_sign": "Welcome to the Bangla Admin Section",
+    # Copyright on the footer
+    "copyright": "Commista Ltd 2023",
+    # The model admin to search from the search bar, search bar omitted if excluded
+    "search_model": ["ads.Ad", "ads.AdCategory", "ads.AdSubCategory"],
+    # Field name on user model that contains avatar ImageField/URLField/Charfield or a callable that receives the user
+    "user_avatar": "avatar",
+
+    ############
+    # Top Menu #
+    ############
+    # Links to put along the top menu
+    "topmenu_links": [
+        # Url that gets reversed (Permissions can be added)
+        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+        # model admin to link to (Permissions checked against model)
+        {"model": "core.User"},
+        # App with dropdown menu to all its models pages (Permissions checked against models)
+        {"app": "core"},
+        {"app": "ads"},
+    ],
+
+    #############
+    # User Menu #
+    #############
+    # Additional links to include in the user menu on the top right ("app" url type is not allowed)
+    "usermenu_links": [{"name": "Bangla Platform"}, {"model": "auth.user"}],
+
+    #############
+    # Side Menu #
+    #############
+    # Whether to display the side menu
+    "show_sidebar": True,
+    # Whether to aut expand the menu
+    "navigation_expanded": True,
+    # Hide these apps when generating side menu e.g (auth)
+    "hide_apps": {"authtoken": ['tokenproxy'], "token_blacklist": ["blacklistedtoken", "outstandingtoken"]},
+    # List of apps (and/or models) to base side menu ordering off of (does not need to contain all apps/models)
+    "order_with_respect_to": ["auth", "core", "core.user", "ads.ad"],
+    # Custom icons for side menu apps/models See https://fontawesome.com/icons?d=gallery&m=free&v=5.0.0,5.0.1,5.0.10,5.0.11,5.0.12,5.0.13,5.0.2,5.0.3,5.0.4,5.0.5,5.0.6,5.0.7,5.0.8,5.0.9,5.1.0,5.1.1,5.2.0,5.3.0,5.3.1,5.4.0,5.4.1,5.4.2,5.13.0,5.12.0,5.11.2,5.11.1,5.10.0,5.9.0,5.8.2,5.8.1,5.7.2,5.7.1,5.7.0,5.6.3,5.5.0,5.4.2
+    # for the full list of 5.13.0 free icon classes
+    "icons": {
+        "auth.group": "fas fa-users",
+        "core.user": "fas fa-user",
+        "core.profile": "fas fa-user",
+        "core.matrimonialprofile": "fas fa-user",
+        "ads.adcategory": "fas fa-list-ul",
+        "ads.adsubcategory": "fas fa-list-ul",
+        "store.order": "fas fa-receipt",
+        "ads.ad": "fas fa-shopping-basket",
+        "ads.favoritead": "fas fa-shopping-basket",
+        "ads.adimage": "fas fa-file-image",
+        "store.productreview": "fas fa-star",
+    },
+    # Icons that are used when one is not manually specified
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+
+    #############
+    # UI Tweaks #
+    #############
+    # "show_ui_builder": True,
+    "changeform_format": "horizontal_tabs",
+    # override change forms on a per modeladmin basis
+    "changeform_format_overrides": {
+        "auth.user": "collapsible",
+        "auth.group": "vertical_tabs",
+    },
+}
+
 JAZZMIN_UI_TWEAKS = {
-    "theme": "minty",
+    "navbar_small_text": False,
+    "footer_small_text": False,
     "body_small_text": False,
-    # "theme": "darkly",
+    "brand_small_text": False,
+    "brand_colour": "navbar-info",
+    "accent": "accent-navy",
+    "navbar": "navbar-cyan navbar-dark",
+    "no_navbar_border": False,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": True,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-light-info",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": False,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "sandstone",
+    "dark_mode_theme": "cyborg",
+    "button_classes": {
+        "primary": "btn-outline-primary",
+        "secondary": "btn-outline-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-outline-success"
+    }
 }
 
 # Logging output if debug is set to false

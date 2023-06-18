@@ -12,15 +12,19 @@ class CustomUserAdmin(UserAdmin):
     list_display = (
         "email",
         "full_name",
+        "phone_number",
         "is_staff",
         "is_active",
+        "is_verified"
     )
     list_filter = (
         "email",
+        "phone_number",
         "full_name",
         "is_staff",
         "is_active",
     )
+    list_per_page = 30
     fieldsets = (
         (
             "Personal Information",
@@ -28,31 +32,15 @@ class CustomUserAdmin(UserAdmin):
                 "fields": (
                     "email",
                     "full_name",
+                    "phone_number",
                     "password",
+                    "is_verified"
                 )
             },
         ),
         (
             "Permissions",
             {"fields": ("is_staff", "is_active", "groups", "user_permissions")},
-        ),
-    )
-    add_fieldsets = (
-        (
-            None,
-            {
-                "classes": ("wide",),
-                "fields": (
-                    "email",
-                    "full_name",
-                    "password1",
-                    "password2",
-                    "is_staff",
-                    "is_active",
-                    "groups",
-                    "user_permissions",
-                ),
-            },
         ),
     )
     search_fields = ("email",)
@@ -65,7 +53,9 @@ class ProfileAdmin(admin.ModelAdmin):
         "full_name",
         "country",
         "email_address",
+        "phone_number"
     )
+    list_per_page = 30
     ordering = ("user__email",)
     search_fields = ("email_address",)
 
@@ -76,6 +66,10 @@ class ProfileAdmin(admin.ModelAdmin):
     @staticmethod
     def email_address(obj: Profile):
         return obj.user.email
+
+    @staticmethod
+    def phone_number(obj: Profile):
+        return obj.user.phone_number
 
 
 admin.site.register(User, CustomUserAdmin)
