@@ -121,3 +121,18 @@ class MatrimonialProfile(BaseModel):
     @property
     def full_name(self):
         return self.user.full_name
+
+
+class MatrimonialProfileImages(BaseModel):
+    matrimonial_profile = models.ForeignKey(MatrimonialProfile, on_delete=models.CASCADE, related_name="images",
+                                            null=True)
+    _image = models.ImageField(upload_to="matrimonial_images/", null=True)
+
+    @property
+    def matrimonial_image(self):
+        if self._image is not None:
+            return self._image.url
+        return None
+
+    def __str__(self):
+        return str(self.matrimonial_profile.full_name)
