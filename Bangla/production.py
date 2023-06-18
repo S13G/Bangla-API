@@ -1,3 +1,5 @@
+import dj_database_url
+
 from .settings import *
 
 CLOUDINARY_STORAGE = {
@@ -7,13 +9,11 @@ CLOUDINARY_STORAGE = {
 }
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": config("DATABASE_NAME"),
-        "HOST": config("DATABASE_HOST"),
-        "USER": config("DATABASE_USER"),
-        "PASSWORD": config("DATABASE_PASSWORD"),
-    }
+    'default': dj_database_url.config(
+            default=config("DATABASE_URL"),
+            conn_max_age=600,
+            conn_health_checks=True,
+    )
 }
 
 INSTALLED_APPS.remove("debug_toolbar")

@@ -9,6 +9,6 @@ urlpatterns = [
     path("ads/search-filters/", views.FilteredAdsListView.as_view(), name="ads_search_and_filters"),
     path("ads/add/", views.CreateAdsView.as_view(), name="create_ads"),
     path("creator/ads/all/", views.RetrieveUserAdsView.as_view(), name="all_creator_ads"),
-    path("favourite-ads/<str:product_id>/add/", views.FavouriteAdView.as_view(), name="add_favourite_ad"),
+    path("favourite-ads/<str:ad_id>/add/", views.FavouriteAdView.as_view(), name="add_favourite_ad"),
     path("favourite-ads/", views.FavouriteAdListView.as_view(), name="favourite_ads_list"),
 ]

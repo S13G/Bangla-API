@@ -36,6 +36,7 @@ class AdsCategoryView(AdsByCategoryMixin, GenericAPIView):
         ad_categories = AdCategory.objects.all()
         serializer = AdCategorySerializer(ad_categories, many=True)
         featured_ads = Ad.objects.select_related('category', 'sub_category').filter(featured=True, is_active=True)
+        print(featured_ads)
         serialized_featured_ads = AdSerializer(featured_ads, many=True)
         count_featured_ads = featured_ads.count()
         all_ads_by_category = []
@@ -109,9 +110,8 @@ class FilteredAdsListView(ListAPIView):
     serializer_class = AdSerializer
     filterset_class = AdFilter
     filter_backends = [DjangoFilterBackend, SearchFilter]
-    search_fields = ['name', 'description', 'category__name', 'price']
+    search_fields = ['name', 'description', 'category__title', 'price']
     queryset = Ad.objects.filter(is_active=True)
-    throttle_classes = [UserRateThrottle]
 
     @extend_schema(
             summary="Filtered Ads List",
@@ -146,6 +146,7 @@ class CreateAdsView(GenericAPIView):
             """
             This endpoint allows an authenticated user to create an ad.
             """,
+            request=CreateAdSerializer,
             responses={
                 status.HTTP_201_CREATED: OpenApiResponse(
                         description="Ad created successfully",
@@ -156,17 +157,18 @@ class CreateAdsView(GenericAPIView):
             }
     )
     def post(self, request):
-        creator = self.request.user
         serializer = self.serializer_class(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         images = self.request.FILES.getlist('images')
         if len(images) > 3:
             return Response({"message": "The maximum number of allowed images is 3", "status": "failed"},
                             status=status.HTTP_400_BAD_REQUEST)
-        created_ad = Ad.objects.create(ad_creator=creator, **serializer.validated_data)
-        for image in images:
-            AdImage.objects.create(ad=created_ad, _image=image)
-        return Response({"message": "Ad created successfully", "status": "success"}, status.HTTP_201_CREATED)
+        created_ad = serializer.save()
+        serialized_data = AdSerializer(created_ad).data
+        ad_images = [AdImage(ad=created_ad, _image=image) for image in images]
+        AdImage.objects.bulk_create(ad_images)
+        return Response({"message": "Ad created successfully", "data": serialized_data, "status": "success"},
+                        status.HTTP_201_CREATED)
 
 
 class RetrieveUserAdsView(GenericAPIView):
@@ -231,7 +233,7 @@ class DeleteUserAdView(GenericAPIView):
                 ),
             }
     )
-    def delete(self, request):
+    def delete(self, request, *args, **kwargs):
         ad_id = self.kwargs.get('ad_id')
         if ad_id is None:
             return Response({"message": "Ad ID is required", "status": "success"},
@@ -305,9 +307,6 @@ class FavouriteAdListView(GenericAPIView):
     )
     def get(self, request):
         customer = self.request.user
-        if customer is None:
-            return Response({"message": "Customer does not exist", "status": "failed"},
-                            status=status.HTTP_400_BAD_REQUEST)
         favourite_ads = FavouriteAd.objects.select_related('ad').filter(customer=customer)
         if not favourite_ads.exists():
             return Response({"message": "Customer has no favourite ads", "status": "failed"},
