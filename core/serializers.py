@@ -179,3 +179,7 @@ class VerifyEmailSerializer(serializers.Serializer):
             raise serializers.ValidationError({"message": "Invalid email format", "status": "failed"})
 
         return attrs
+
+
+class MatrimonialProfileSerializer(serializers.Serializer):
+    pass
