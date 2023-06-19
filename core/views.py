@@ -12,9 +12,8 @@ from rest_framework_simplejwt.views import TokenBlacklistView, TokenObtainPairVi
 
 from core.emails import Util
 from core.models import Profile, User
-from core.serializers import ChangePasswordSerializer, LoginSerializer, ProfileSerializer, \
-    RegisterSerializer, RequestNewPasswordCodeSerializer, \
-    ResendEmailVerificationSerializer, UpdateProfileSerializer, VerifyEmailSerializer
+from core.serializers import ChangePasswordSerializer, LoginSerializer, ProfileSerializer, RegisterSerializer, \
+    RequestNewPasswordCodeSerializer, ResendEmailVerificationSerializer, UpdateProfileSerializer, VerifyEmailSerializer
 
 
 # Create your views here.
@@ -109,7 +108,8 @@ class LoginView(TokenObtainPairView):
         tokens = super().post(request)
 
         return Response({"message": "Logged in successfully", "tokens": tokens.data,
-                         "data": {"email": user.email, "full_name": user.full_name, "phone_number": user.phone_number}, "status": "success"},
+                         "data": {"email": user.email, "full_name": user.full_name, "phone_number": user.phone_number},
+                         "status": "success"},
                         status=status.HTTP_200_OK)
 
 

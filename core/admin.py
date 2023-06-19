@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from core.forms import CustomUserChangeForm, CustomUserCreationForm
-from core.models import MatrimonialProfile, Profile, User
+from core.models import Profile, User
 
 
 class CustomUserAdmin(UserAdmin):
@@ -73,4 +73,3 @@ class ProfileAdmin(admin.ModelAdmin):
 
 
 admin.site.register(User, CustomUserAdmin)
-admin.site.register(MatrimonialProfile)

@@ -45,6 +45,7 @@ LOCAL_APPS = [
     "core",
     "common",
     "ads",
+    "matrimonials",
 ]
 
 THIRD_PARTY_APPS = [
@@ -264,6 +265,7 @@ JAZZMIN_SETTINGS = {
         # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "core"},
         {"app": "ads"},
+        {"app": "matrimonials"},
     ],
 
     #############
