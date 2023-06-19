@@ -1,3 +1,6 @@
+from django.db.models import Q
+from django.shortcuts import redirect
+from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
@@ -6,8 +9,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from matrimonials.filters import MatrimonialFilter
-from matrimonials.models import BookmarkedProfile, ConnectionRequest, MatrimonialProfile, MatrimonialProfileImage
-from matrimonials.serializers import ConnectionRequestSerializer, CreateMatrimonialProfileSerializer, \
+from matrimonials.models import BookmarkedProfile, ConnectionRequest, Conversation, MatrimonialProfile, \
+    MatrimonialProfileImage
+from matrimonials.serializers import ConnectionRequestSerializer, ConversationListSerializer, \
+    ConversationSerializer, CreateMatrimonialProfileSerializer, \
     MatrimonialProfileSerializer
 
 
@@ -403,3 +408,103 @@ class ConnectionRequestRetrieveUpdateView(GenericAPIView):
         connection_request.delete()
         return Response({"message": "Connection request deleted successfully", "status": "failed"},
                         status=status.HTTP_204_NO_CONTENT)
+
+
+class ConversationsListView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+            summary="Retrieve a Conversation List",
+            description=
+            """
+            This endpoint retrieve a conversation list.
+            """,
+            responses={
+                status.HTTP_200_OK: OpenApiResponse(
+                        description="Conversation list fetched successfully",
+                ),
+            },
+    )
+    def get(self, request):
+        conversation_list = Conversation.objects.filter(Q(initiator=self.request.user) |
+                                                        Q(receiver=self.request.user))
+        serializer = ConversationListSerializer(instance=conversation_list, many=True)
+        return Response(
+                {"message": "Conversation list fetched successfully", "data": serializer.data, "status": "success"},
+                status=status.HTTP_200_OK)
+
+
+class RetrieveConversationView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ConversationSerializer
+
+    @extend_schema(
+            summary="Retrieve a conversation",
+            description=
+            """
+            This endpoint retrieve a conversation.
+            """,
+            responses={
+                status.HTTP_200_OK: OpenApiResponse(
+                        description="Conversation list fetched successfully",
+                ),
+                status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                        description="Conversation does not exist",
+                ),
+            },
+    )
+    def get(self, request, *args, **kwargs):
+        convo_id = self.kwargs.get('convo_id')
+        conversation = Conversation.objects.filter(id=convo_id)
+        if not conversation.exists():
+            return Response({"message": "Conversation does not exist", "status": "success"},
+                            status=status.HTTP_404_NOT_FOUND)
+        else:
+            serializer = self.serializer_class(instance=conversation[0])
+            return Response({"message": "Conversation fetched successfully", "data": serializer.data, "status": "success"},
+                            status=status.HTTP_200_OK)
+
+
+class CreateConversationView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ConversationSerializer
+
+    @extend_schema(
+            summary="Create a conversation",
+            description=
+            """
+            This endpoint creates a conversation.
+            """,
+            responses={
+                status.HTTP_200_OK: OpenApiResponse(
+                        description="Conversation created successfully",
+                        response=ConversationSerializer,
+                ),
+                status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                        description="Matrimonial profile does not exist",
+                ),
+            },
+    )
+    def post(self, request, *args, **kwargs):
+        participant_id = self.kwargs.get('participant_id')
+        try:
+            initiator = MatrimonialProfile.objects.get(user=self.request.user)
+        except MatrimonialProfile.DoesNotExist:
+            return Response({"message": "Matrimonial profile does not exist", "status": "failed"},
+                            status=status.HTTP_404_NOT_FOUND)
+        try:
+            participant = MatrimonialProfile.objects.get(user=participant_id)
+        except MatrimonialProfile.DoesNotExist:
+            return Response({"message": "You cannot chat with a non existent user", "status": "failed"},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        conversation = Conversation.objects.filter(Q(initiator=initiator, receiver=participant) |
+                                                   Q(initiator=participant, receiver=initiator))
+        if conversation.exists():
+            return redirect(reverse('get_conversation', args=(conversation[0].id,)))
+        else:
+            conversation = Conversation.objects.create(initiator=initiator, receiver=participant)
+            serialized_data = ConversationSerializer(conversation).data
+            return Response(
+                    {"message": "Conversation created successfully", "data": serialized_data, "status": "success"},
+                    status=status.HTTP_201_CREATED)

@@ -72,5 +72,21 @@ class BookmarkedProfile(BaseModel):
 
 class ConnectionRequest(BaseModel):
     sender = models.ForeignKey(MatrimonialProfile, on_delete=models.CASCADE, related_name="connection_requests_sender")
-    receiver = models.ForeignKey(MatrimonialProfile, on_delete=models.CASCADE, related_name="connection_requests_receiverx")
+    receiver = models.ForeignKey(MatrimonialProfile, on_delete=models.CASCADE,
+                                 related_name="connection_requests_receiver")
     status = models.CharField(max_length=1, choices=CONNECTION_CHOICES)
+
+    def __str__(self):
+        return f"{self.sender} --- {self.receiver} --- {self.status}"
+
+
+class Conversation(BaseModel):
+    initiator = models.ForeignKey(MatrimonialProfile, on_delete=models.CASCADE, related_name="conversations_initiator")
+    receiver = models.ForeignKey(MatrimonialProfile, on_delete=models.CASCADE, related_name="conversations_receiver")
+
+
+class Message(BaseModel):
+    sender = models.ForeignKey(MatrimonialProfile, on_delete=models.CASCADE, related_name="message_sender")
+    text = models.CharField(max_length=200, blank=True)
+    attachment = models.FileField(blank=True)
+    conversation_id = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="messages")

@@ -49,6 +49,7 @@ LOCAL_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
+    "channels",
     "cloudinary_storage",
     "corsheaders",
     "debug_toolbar",

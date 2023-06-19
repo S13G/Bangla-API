@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from core.choices import GENDER_CHOICES
 from matrimonials.choices import CONNECTION_CHOICES, EDUCATION_CHOICES, RELIGION_CHOICES
-from matrimonials.models import ConnectionRequest, MatrimonialProfile
+from matrimonials.models import ConnectionRequest, Conversation, MatrimonialProfile
 
 
 class CreateMatrimonialProfileSerializer(serializers.Serializer):
@@ -83,3 +83,67 @@ class ConnectionRequestSerializer(serializers.Serializer):
         instance.status = validated_data.get('status', instance.status)
         instance.save()
         return instance
+
+
+class MessageSerializer(serializers.Serializer):
+    sender = serializers.UUIDField()
+    text = serializers.CharField()
+    attachment = serializers.FileField(allow_empty_file=True, required=False)
+
+    def validate(self, attrs):
+        sender = attrs.get('sender')
+
+        try:
+            MatrimonialProfile.objects.get(id=sender)
+        except MatrimonialProfile.DoesNotExist:
+            return serializers.ValidationError(
+                    {"message": "Sender matrimonial profile doesn't exist", "status": "failed"})
+
+
+class ConversationListSerializer(serializers.Serializer):
+    initiator = serializers.UUIDField()
+    receiver = serializers.UUIDField()
+    last_message = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_last_message(obj: Conversation):
+        message = obj.messages.first()
+        return MessageSerializer(message)
+
+    def validate(self, attrs):
+        initiator = attrs.get('initiator')
+        receiver = attrs.get('receiver')
+
+        try:
+            MatrimonialProfile.objects.get(id=initiator)
+        except MatrimonialProfile.DoesNotExist:
+            return serializers.ValidationError(
+                    {"message": "Initiator matrimonial profile doesn't exist", "status": "failed"})
+
+        try:
+            MatrimonialProfile.objects.get(id=receiver)
+        except MatrimonialProfile.DoesNotExist:
+            return serializers.ValidationError(
+                    {"message": "Receiver matrimonial profile doesn't exist", "status": "failed"})
+
+
+class ConversationSerializer(serializers.Serializer):
+    initiator = serializers.UUIDField()
+    receiver = serializers.UUIDField()
+    messages = MessageSerializer(many=True)
+
+    def validate(self, attrs):
+        initiator = attrs.get('initiator')
+        receiver = attrs.get('receiver')
+
+        try:
+            MatrimonialProfile.objects.get(id=initiator)
+        except MatrimonialProfile.DoesNotExist:
+            return serializers.ValidationError(
+                    {"message": "Initiator matrimonial profile doesn't exist", "status": "failed"})
+
+        try:
+            MatrimonialProfile.objects.get(id=receiver)
+        except MatrimonialProfile.DoesNotExist:
+            return serializers.ValidationError(
+                    {"message": "Receiver matrimonial profile doesn't exist", "status": "failed"})
