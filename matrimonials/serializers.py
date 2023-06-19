@@ -2,8 +2,8 @@ from django_countries.serializer_fields import CountryField
 from rest_framework import serializers
 
 from core.choices import GENDER_CHOICES
-from matrimonials.choices import EDUCATION_CHOICES, RELIGION_CHOICES
-from matrimonials.models import MatrimonialProfile
+from matrimonials.choices import CONNECTION_CHOICES, EDUCATION_CHOICES, RELIGION_CHOICES
+from matrimonials.models import ConnectionRequest, MatrimonialProfile
 
 
 class CreateMatrimonialProfileSerializer(serializers.Serializer):
@@ -51,3 +51,35 @@ class MatrimonialProfileSerializer(serializers.Serializer):
         if first_image:
             return first_image.matrimonial_image
         return first_image
+
+
+class ConnectionRequestSerializer(serializers.Serializer):
+    id = serializers.UUIDField(read_only=True)
+    sender = serializers.UUIDField()
+    receiver = serializers.UUIDField()
+    status = serializers.ChoiceField(choices=CONNECTION_CHOICES)
+    created = serializers.DateTimeField(read_only=True)
+
+    def validate(self, attrs):
+        sender = attrs.get('sender')
+        receiver = attrs.get('receiver')
+
+        try:
+            MatrimonialProfile.objects.get(id=sender)
+        except MatrimonialProfile.DoesNotExist:
+            return serializers.ValidationError(
+                    {"message": "Sender matrimonial profile doesn't exist", "status": "failed"})
+
+        try:
+            MatrimonialProfile.objects.get(id=receiver)
+        except MatrimonialProfile.DoesNotExist:
+            return serializers.ValidationError(
+                    {"message": "Receiver matrimonial profile doesn't exist", "status": "failed"})
+
+    def create(self, validated_data):
+        return ConnectionRequest.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.status = validated_data.get('status', instance.status)
+        instance.save()
+        return instance

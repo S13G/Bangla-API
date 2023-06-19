@@ -4,7 +4,7 @@ from django_countries.fields import CountryField
 
 from common.models import BaseModel
 from core.choices import GENDER_CHOICES
-from matrimonials.choices import EDUCATION_CHOICES, RELIGION_CHOICES
+from matrimonials.choices import CONNECTION_CHOICES, EDUCATION_CHOICES, RELIGION_CHOICES
 
 User = get_user_model()
 
@@ -62,5 +62,15 @@ class MatrimonialProfileImage(BaseModel):
 
 
 class BookmarkedProfile(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    profile = models.ForeignKey(MatrimonialProfile, on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name="bookmarked_matrimonial_profile")
+    profile = models.ForeignKey(MatrimonialProfile, on_delete=models.CASCADE, null=True,
+                                related_name="bookmarked_profile")
+
+    def __str__(self):
+        return str(self.user.full_name)
+
+
+class ConnectionRequest(BaseModel):
+    sender = models.ForeignKey(MatrimonialProfile, on_delete=models.CASCADE, related_name="connection_requests_sender")
+    receiver = models.ForeignKey(MatrimonialProfile, on_delete=models.CASCADE, related_name="connection_requests_receiverx")
+    status = models.CharField(max_length=1, choices=CONNECTION_CHOICES)
