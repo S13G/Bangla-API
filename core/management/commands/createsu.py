@@ -17,5 +17,4 @@ class Command(BaseCommand):
                     password=config('ADMIN_PASSWORD')
             )
             print('Superuser has been created.')
-        else:
-            print("Superuser already exists")
+        print("Superuser already exists")
