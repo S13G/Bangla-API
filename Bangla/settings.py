@@ -178,8 +178,6 @@ DATABASES = {
     )
 }
 
-
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -315,14 +313,9 @@ JAZZMIN_SETTINGS = {
         "auth.group": "fas fa-users",
         "core.user": "fas fa-user",
         "core.profile": "fas fa-user",
-        "core.matrimonialprofile": "fas fa-user",
+        "matrimonials.matrimonialprofile": "fas fa-ring",
         "ads.adcategory": "fas fa-list-ul",
-        "ads.adsubcategory": "fas fa-list-ul",
-        "store.order": "fas fa-receipt",
         "ads.ad": "fas fa-shopping-basket",
-        "ads.favoritead": "fas fa-shopping-basket",
-        "ads.adimage": "fas fa-file-image",
-        "store.productreview": "fas fa-star",
     },
     # Icons that are used when one is not manually specified
     "default_icon_parents": "fas fa-chevron-circle-right",
