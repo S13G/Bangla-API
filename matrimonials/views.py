@@ -269,6 +269,15 @@ class FilterMatrimonialProfilesView(GenericAPIView):
     )
     def get(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
+
+        # Exclude the profile of the current user
+        try:
+            current_user_profile = self.request.user.matrimonial_profile
+        except MatrimonialProfile.DoesNotExist:
+            return Response({"message": "User does not have a matrimonial profile", "status": "failed"},
+                            status=status.HTTP_404_NOT_FOUND)
+        queryset = queryset.exclude(user=current_user_profile.user)
+
         serialized_data = [
             {
                 "full_name": bp.full_name,
