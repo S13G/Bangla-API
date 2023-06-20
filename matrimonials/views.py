@@ -422,6 +422,7 @@ class ConversationsListView(GenericAPIView):
             responses={
                 status.HTTP_200_OK: OpenApiResponse(
                         description="Conversation list fetched successfully",
+                        response=ConversationSerializer
                 ),
             },
     )
@@ -446,7 +447,8 @@ class RetrieveConversationView(GenericAPIView):
             """,
             responses={
                 status.HTTP_200_OK: OpenApiResponse(
-                        description="Conversation list fetched successfully",
+                        description="Conversation fetched successfully",
+                        response=ConversationSerializer
                 ),
                 status.HTTP_404_NOT_FOUND: OpenApiResponse(
                         description="Conversation does not exist",
