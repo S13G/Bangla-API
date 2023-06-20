@@ -48,7 +48,6 @@ class Ad(BaseModel):
     price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     location = CountryField()
     category = models.ForeignKey(AdCategory, on_delete=models.CASCADE, null=True, related_name="ads")
-    sub_category = models.ForeignKey(AdSubCategory, on_delete=models.CASCADE, null=True, related_name="ads", blank=True)
     featured = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
 

@@ -29,21 +29,15 @@ class MatrimonialProfile(BaseModel):
         verbose_name_plural = "Matrimonial Profiles"
 
     def __str__(self):
-        return self.user.full_name
-
-    @property
-    def matrimonial_avatar(self):
-        if self._avatar is not None:
-            return self._avatar.url
-        return None
+        return self.full_name
 
     @property
     def email_address(self):
-        return self.user.email
+        return self.email_address
 
     @property
     def full_name(self):
-        return self.user.full_name
+        return self.full_name
 
 
 class MatrimonialProfileImage(BaseModel):
