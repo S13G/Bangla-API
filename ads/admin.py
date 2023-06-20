@@ -52,7 +52,7 @@ class AdCategoryAdmin(admin.ModelAdmin):
         return format_html('<a href="{}">{} Ads</a>', url, category.ads_count)
 
     @admin.display(ordering="sub_categories_count")
-    def sub_categories_count(self, obj):
+    def sub_categories_count(self, obj: AdCategory):
         return obj.sub_categories_count
 
     def get_queryset(self, request):
