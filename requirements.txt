@@ -39,6 +39,7 @@ google-api-python-client==2.80.0
 google-auth==2.16.2
 google-auth-httplib2==0.1.0
 googleapis-common-protos==1.58.0
+gunicorn==20.1.0
 httplib2==0.21.0
 hyperlink==21.0.0
 idna==3.4
@@ -54,6 +55,7 @@ Pillow==9.4.0
 platformdirs==3.1.0
 pluggy==1.0.0
 protobuf==4.22.1
+psycopg2==2.9.6
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.21
