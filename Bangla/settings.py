@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 
 DJANGO_APPS = [
+    "daphne",
     "jazzmin",  # not a django app but a custom django admin library
     "django.contrib.admin",
     "django.contrib.auth",
@@ -146,6 +147,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Bangla.wsgi.application'
+
+ASGI_APPLICATION = "Bangla.asgi.application"
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases

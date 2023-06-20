@@ -2,6 +2,10 @@ import dj_database_url
 
 from .settings import *
 
+DEBUG = False
+
+ALLOWED_HOSTS = config("ALLOWED_HOSTS").split(" ")
+
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": config("CLOUDINARY_CLOUD_NAME"),
     "API_KEY": config("CLOUDINARY_API_KEY"),
