@@ -1,0 +1,1 @@
+web: python manage.py migrate && gunicorn Bangla.wsgi && python manage.py createsu
