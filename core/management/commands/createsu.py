@@ -13,7 +13,9 @@ class Command(BaseCommand):
             User.objects.create_superuser(
                     email=config('ADMIN_EMAIL'),
                     full_name=config('ADMIN_FULL_NAME'),
+                    phone_number=config('ADMIN_PHONE_NUMBER'),
                     password=config('ADMIN_PASSWORD')
             )
             print('Superuser has been created.')
-        print("Superuser already exists")
+        else:
+            print("Superuser already exists")
