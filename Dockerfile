@@ -28,6 +28,7 @@ ENV ADMIN_EMAIL=${ADMIN_EMAIL}
 ENV ADMIN_PASSWORD=${ADMIN_EMAIL}
 ENV ALLOWED_HOSTS=${ALLOWED_HOSTS}
 ENV REDISCLOUD_URL=${REDISCLOUD_URL}
+ENV DATABASE_URL=${DATABASE_URL=}
 
 # Copy the requirements.txt file into the workdir
 COPY ./requirements.txt requirements.txt
@@ -37,9 +38,6 @@ RUN pip3 install -r requirements.txt
 
 # Copy the Django project into the image
 COPY . .
-
-# Copy the SQLite database file
-COPY ./bangla.sqlite3 /bangla/bangla.sqlite3
 
 # collectstatic without interactive input, perform migrations and create a superuser automatically
 CMD python3 manage.py migrate --settings=$DJANGO_SETTINGS_MODULE && \

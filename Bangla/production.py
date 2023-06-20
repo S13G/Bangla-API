@@ -1,4 +1,4 @@
-# import dj_database_url
+import dj_database_url
 
 from .settings import *
 
@@ -23,19 +23,12 @@ CLOUDINARY_STORAGE = {
     "API_SECRET": config("CLOUDINARY_API_SECRET"),
 }
 
-# DATABASES = {
-#     'default': dj_database_url.config(
-#             default=config("DATABASE_URL"),
-#             conn_max_age=600,
-#             conn_health_checks=True,
-#     )
-# }
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'bangla.sqlite3',
-    }
+    'default': dj_database_url.config(
+            default=config("DATABASE_URL"),
+            conn_max_age=600,
+            conn_health_checks=True,
+    )
 }
 
 INSTALLED_APPS.remove("debug_toolbar")
