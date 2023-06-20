@@ -35,7 +35,7 @@ class AdsCategoryView(AdsByCategoryMixin, GenericAPIView):
     def get(self, request):
         ad_categories = AdCategory.objects.all()
         serializer = AdCategorySerializer(ad_categories, many=True)
-        featured_ads = Ad.objects.select_related('category', 'sub_category').filter(featured=True, is_active=True)
+        featured_ads = Ad.objects.select_related('category').filter(featured=True, is_active=True)
         print(featured_ads)
         serialized_featured_ads = AdSerializer(featured_ads, many=True)
         count_featured_ads = featured_ads.count()
