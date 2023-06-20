@@ -1,10 +1,21 @@
-import dj_database_url
+# import dj_database_url
 
 from .settings import *
 
 DEBUG = False
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS").split(" ")
+
+REDISCLOUD_URL = config("REDISCLOUD_URL")
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [REDISCLOUD_URL],
+        },
+    },
+}
 
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": config("CLOUDINARY_CLOUD_NAME"),
