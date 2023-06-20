@@ -271,14 +271,14 @@ class FilterMatrimonialProfilesView(GenericAPIView):
         queryset = self.filter_queryset(self.get_queryset())
         serialized_data = [
             {
-                "full_name": bp.profile.full_name,
-                "height": bp.profile.height,
-                "age": bp.profile.age,
-                "religion": bp.profile.religion,
-                "city": bp.profile.city,
-                "education": bp.profile.education,
-                "profession": bp.profile.profession,
-                "images": [image.matrimonial_image for image in bp.profile.images.all()]
+                "full_name": bp.full_name,
+                "height": bp.height,
+                "age": bp.age,
+                "religion": bp.religion,
+                "city": bp.city,
+                "education": bp.education,
+                "profession": bp.profession,
+                "images": [image.matrimonial_image for image in bp.images.all()]
             }.copy()
             for bp in queryset
         ]
