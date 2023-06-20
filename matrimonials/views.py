@@ -2,7 +2,7 @@ from django.db.models import Q
 from django.shortcuts import redirect
 from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -20,7 +20,7 @@ class RetrieveAllMatrimonialProfilesView(GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-            summary="Get all matrimonial profile",
+            summary="Get all matrimonial profiles",
             description=
             """
             This endpoint allows an authenticated user to retrieve all matrimonial profile.
@@ -57,7 +57,7 @@ class RetrieveCreateMatrimonialProfileView(GenericAPIView):
     serializer_class = CreateMatrimonialProfileSerializer
 
     @extend_schema(
-            summary="Get matrimonial profile",
+            summary="Get logged in user matrimonial profile",
             description=
             """
             This endpoint allows an authenticated user to retrieve his/her matrimonial profile.
@@ -85,10 +85,10 @@ class RetrieveCreateMatrimonialProfileView(GenericAPIView):
                 status=status.HTTP_200_OK)
 
     @extend_schema(
-            summary="Create a matrimonial profile",
+            summary="Create a matrimonial profile for logged in user",
             description=
             """
-            This endpoint allows an authenticated user to create a matrimonial profile.
+            This endpoint allows an authenticated user to create a matrimonial profile for him/herself.
             """,
             request=CreateMatrimonialProfileSerializer,
             responses={
@@ -169,6 +169,7 @@ class BookmarkUsersMatrimonialProfile(GenericAPIView):
             responses={
                 status.HTTP_201_CREATED: OpenApiResponse(
                         description="Matrimonial profile added to bookmark.",
+                        response=MatrimonialProfileSerializer,
                 ),
                 status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                         description="Invalid or missing matrimonial_profile_id.",
@@ -211,6 +212,7 @@ class BookmarkMatrimonialProfileListView(GenericAPIView):
             responses={
                 status.HTTP_200_OK: OpenApiResponse(
                         description="All bookmarked profiles fetched",
+                        response=MatrimonialProfileSerializer(many=True)
                 ),
             }
     )
@@ -250,9 +252,15 @@ class FilterMatrimonialProfilesView(GenericAPIView):
             """
             This endpoint retrieves a list of filtered matrimonial profile.
             """,
+            parameters=[
+                OpenApiParameter(name="age", description="age (optional)", required=False),
+                OpenApiParameter(name="religion", description="religion (optional)", required=False),
+                OpenApiParameter(name="education", description="education (optional)", required=False),
+            ],
             responses={
                 status.HTTP_200_OK: OpenApiResponse(
                         description="Matrimonial profile filtered successfully.",
+                        response=MatrimonialProfileSerializer(many=True)
                 ),
                 status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
                         description="Authentication credentials were not provided."
@@ -463,8 +471,9 @@ class RetrieveConversationView(GenericAPIView):
                             status=status.HTTP_404_NOT_FOUND)
         else:
             serializer = self.serializer_class(instance=conversation[0])
-            return Response({"message": "Conversation fetched successfully", "data": serializer.data, "status": "success"},
-                            status=status.HTTP_200_OK)
+            return Response(
+                    {"message": "Conversation fetched successfully", "data": serializer.data, "status": "success"},
+                    status=status.HTTP_200_OK)
 
 
 class CreateConversationView(GenericAPIView):

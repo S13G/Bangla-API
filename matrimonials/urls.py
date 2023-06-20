@@ -9,7 +9,7 @@ urlpatterns = [
     path('conversations/all/', views.ConversationsListView.as_view(), name="conversations_list"),
     path('conversations/<str:convo_id>/', views.RetrieveConversationView.as_view(), name='get_conversation'),
     path('conversations/start/', views.CreateConversationView.as_view(), name='start_conversation'),
-    path('matrimonial-profile/all/', views.RetrieveCreateMatrimonialProfileView.as_view(),
+    path('matrimonial-profile/all/', views.RetrieveAllMatrimonialProfilesView.as_view(),
          name="retrieve_all_matrimonial_profile"),
     path('matrimonial-profile/', views.RetrieveCreateMatrimonialProfileView.as_view(),
          name="retrieve_create_matrimonial_profile"),

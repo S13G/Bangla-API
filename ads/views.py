@@ -28,7 +28,7 @@ class AdsCategoryView(AdsByCategoryMixin, GenericAPIView):
             responses={
                 status.HTTP_200_OK: OpenApiResponse(
                         description="Ad successfully fetched",
-                        response=(AdCategorySerializer, AdSerializer,),
+                        response=[AdCategorySerializer, AdSerializer]
                 ),
             }
     )
@@ -150,6 +150,7 @@ class CreateAdsView(GenericAPIView):
             responses={
                 status.HTTP_201_CREATED: OpenApiResponse(
                         description="Ad created successfully",
+                        response=AdSerializer,
                 ),
                 status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                         description="Bad request. Maximum number of allowed images exceeded.",
@@ -223,7 +224,6 @@ class DeleteUserAdView(GenericAPIView):
             responses={
                 status.HTTP_204_NO_CONTENT: OpenApiResponse(
                         description="Ad successfully removed",
-                        response=AdSerializer,
                 ),
                 status.HTTP_404_NOT_FOUND: OpenApiResponse(
                         description="This ad does not exist, try again",
@@ -259,6 +259,7 @@ class FavouriteAdView(GenericAPIView):
             responses={
                 status.HTTP_201_CREATED: OpenApiResponse(
                         description="Ad added to favorites.",
+                        response=AdSerializer
                 ),
                 status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                         description="Invalid or missing ad ID.",
