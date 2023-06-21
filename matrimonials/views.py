@@ -187,9 +187,14 @@ class BookmarkUsersMatrimonialProfile(GenericAPIView):
         try:
             matrimonial_profile = MatrimonialProfile.objects.get(id=matrimonial_profile_id)
         except MatrimonialProfile.DoesNotExist:
-            return Response({"message": "Invalid matrimonial profile id", "status": "failed"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "Invalid matrimonial profile id", "status": "failed"},
+                            status=status.HTTP_404_NOT_FOUND)
 
-        matrimonial_profile, created = MatrimonialProfile.objects.get_or_create(user=user, profile=matrimonial_profile)
+        if matrimonial_profile == self.request.user.matrimonial_profile:
+            return Response({"message": "You can't bookmark your own matrimonial profile", "status": "failed"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        matrimonial_profile, created = BookmarkedProfile.objects.get_or_create(user=user, profile=matrimonial_profile)
 
         if created:
             return Response({"message": "Matrimonial profile bookmarked", "status": "success"},
@@ -289,8 +294,9 @@ class FilterMatrimonialProfilesView(GenericAPIView):
             }.copy()
             for bp in queryset
         ]
-        return Response({"message": "Matrimonial Profiles filtered successfully", "data": serialized_data, "status": "success"},
-                        status.HTTP_200_OK)
+        return Response(
+                {"message": "Matrimonial Profiles filtered successfully", "data": serialized_data, "status": "success"},
+                status.HTTP_200_OK)
 
 
 class ConnectionRequestListCreateView(GenericAPIView):
