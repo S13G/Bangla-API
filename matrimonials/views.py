@@ -35,6 +35,7 @@ class RetrieveAllMatrimonialProfilesView(GenericAPIView):
         all_matrimonial_profiles = MatrimonialProfile.objects.all().exclude(user=self.request.user)
         data = [
             {
+                "id": profile.id,
                 "full_name": profile.full_name,
                 "religion": profile.religion,
                 "city": profile.city,
