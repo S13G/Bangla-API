@@ -1,9 +1,10 @@
+from django.db import transaction
 from django_countries.serializer_fields import CountryField
 from rest_framework import serializers
 
 from core.choices import GENDER_CHOICES
 from matrimonials.choices import CONNECTION_CHOICES, EDUCATION_CHOICES, RELIGION_CHOICES
-from matrimonials.models import ConnectionRequest, Conversation, MatrimonialProfile
+from matrimonials.models import ConnectionRequest, Conversation, MatrimonialProfile, MatrimonialProfileImage
 
 
 class CreateMatrimonialProfileSerializer(serializers.Serializer):
@@ -30,11 +31,24 @@ class CreateMatrimonialProfileSerializer(serializers.Serializer):
             raise serializers.ValidationError({"message": "Income should be a positive value.", "status": "failed"})
         return attrs
 
+    @transaction.atomic
     def create(self, validated_data):
         user = self.context['request'].user
         if MatrimonialProfile.objects.filter(user=user).exists():
-            serializers.ValidationError({"message": "Ths user already has a matrimonial profile", "status": "failed"})
-        return MatrimonialProfile.objects.create(user=user, **validated_data)
+            raise serializers.ValidationError(
+                    {"message": "This user already has a matrimonial profile", "status": "failed"}
+            )
+
+        images = validated_data.pop('images')
+        profile = MatrimonialProfile.objects.create(user=user, **validated_data)
+
+        matrimonial_images = [
+            MatrimonialProfileImage(matrimonial_profile=profile, _image=image)
+            for image in images
+        ]
+        MatrimonialProfileImage.objects.bulk_create(matrimonial_images)
+
+        return profile
 
 
 class MatrimonialProfileSerializer(serializers.Serializer):

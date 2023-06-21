@@ -9,8 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from matrimonials.filters import MatrimonialFilter
-from matrimonials.models import BookmarkedProfile, ConnectionRequest, Conversation, MatrimonialProfile, \
-    MatrimonialProfileImage
+from matrimonials.models import BookmarkedProfile, ConnectionRequest, Conversation, MatrimonialProfile
 from matrimonials.serializers import ConnectionRequestSerializer, ConversationListSerializer, \
     ConversationSerializer, CreateMatrimonialProfileSerializer, \
     MatrimonialProfileSerializer
@@ -108,11 +107,10 @@ class RetrieveCreateMatrimonialProfileView(GenericAPIView):
         if len(images) > 6:
             return Response({"message": "The maximum number of allowed images is 6", "status": "failed"},
                             status=status.HTTP_400_BAD_REQUEST)
+
         created_profile = serializer.save()
         serialized_data = MatrimonialProfileSerializer(created_profile).data
-        matrimonial_images = [MatrimonialProfileImage(matrimonial_profile=created_profile, _image=image) for image in
-                              images]
-        MatrimonialProfileImage.objects.bulk_create(matrimonial_images)
+
         return Response(
                 {"message": "Matrimonial profile created successfully", "data": serialized_data, "status": "success"},
                 status=status.HTTP_201_CREATED)
@@ -274,7 +272,7 @@ class FilterMatrimonialProfilesView(GenericAPIView):
         try:
             current_user_profile = self.request.user.matrimonial_profile
         except MatrimonialProfile.DoesNotExist:
-            return Response({"message": "User does not have a matrimonial profile", "status": "failed"},
+            return Response({"message": "You must have a matrimonial profile before filtering", "status": "failed"},
                             status=status.HTTP_404_NOT_FOUND)
         queryset = queryset.exclude(user=current_user_profile.user)
 
