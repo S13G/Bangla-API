@@ -345,6 +345,7 @@ class ConnectionRequestListCreateView(GenericAPIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
+        print(serializer.save())
         return Response({"message": "Connection request created successfully", "status": "success"},
                         status=status.HTTP_201_CREATED)
 

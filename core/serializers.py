@@ -4,8 +4,8 @@ from django.core.validators import FileExtensionValidator
 from django.core.validators import validate_email
 from django_countries.serializer_fields import CountryField
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
+from common.exceptions import CustomValidation
 from core.models import User
 
 
@@ -17,10 +17,10 @@ class ChangePasswordSerializer(serializers.Serializer):
         code = attrs.get('code')
 
         if not code:
-            raise serializers.ValidationError({"message": "Code is required", "status": "failed"})
+            raise CustomValidation({"message": "Code is required", "status": "failed"})
 
         if not re.match("^[0-9]{4}$", str(code)):
-            raise serializers.ValidationError({"message": "Code must be 4-digit number", "status": "failed"})
+            raise CustomValidation({"message": "Code must be 4-digit number", "status": "failed"})
 
         return attrs
 
@@ -34,8 +34,8 @@ class LoginSerializer(serializers.Serializer):
 
         try:
             validate_email(email)
-        except ValidationError:
-            raise serializers.ValidationError({"message": "Invalid email format", "status": "failed"})
+        except CustomValidation:
+            raise CustomValidation({"message": "Invalid email format", "status": "failed"})
 
         return attrs
 
@@ -51,15 +51,15 @@ class ProfileSerializer(serializers.Serializer):
         avatar = attrs.get('_avatar')
         max_size = 5 * 1024 * 1024  # 3MB in bytes
         if avatar.size > max_size:
-            raise ValidationError({"message": f"Image {avatar} size should be less than 5MB", "status": "failed"})
+            raise CustomValidation({"message": f"Image {avatar} size should be less than 5MB", "status": "failed"})
         return attrs
 
     def validate_phone_number(self, value):
         phone_number = value
         if not phone_number.startswith('+'):
-            raise ValidationError({"message": "Phone number must start with a plus sign (+)", "status": "failed"})
+            raise CustomValidation({"message": "Phone number must start with a plus sign (+)", "status": "failed"})
         if not phone_number[1:].isdigit():
-            raise ValidationError(
+            raise CustomValidation(
                     {"message": "Phone number must only contain digits after the plus sign (+)", "status": "failed"})
         return value
 
@@ -77,16 +77,16 @@ class RegisterSerializer(serializers.Serializer):
 
         try:
             validate_email(email)
-        except ValidationError:
-            raise serializers.ValidationError({"message": "Invalid email format", "status": "failed"})
+        except CustomValidation:
+            raise CustomValidation({"message": "Invalid email format", "status": "failed"})
 
         if not full_name:
-            raise serializers.ValidationError({"message": "full name is required", "status": "failed"})
+            raise CustomValidation({"message": "full name is required", "status": "failed"})
 
         if not phone_number.startswith('+'):
-            raise ValidationError({"message": "Phone number must start with a plus sign (+)", "status": "failed"})
+            raise CustomValidation({"message": "Phone number must start with a plus sign (+)", "status": "failed"})
         if not phone_number[1:].isdigit():
-            raise ValidationError(
+            raise CustomValidation(
                     {"message": "Phone number must only contain digits after the plus sign (+)", "status": "failed"})
         return attrs
 
@@ -102,8 +102,8 @@ class RequestNewPasswordCodeSerializer(serializers.Serializer):
 
         try:
             validate_email(email)
-        except ValidationError:
-            raise serializers.ValidationError({"message": "Invalid email format", "status": "failed"})
+        except CustomValidation:
+            raise CustomValidation({"message": "Invalid email format", "status": "failed"})
         return attrs
 
 
@@ -115,8 +115,8 @@ class ResendEmailVerificationSerializer(serializers.Serializer):
 
         try:
             validate_email(email)
-        except ValidationError:
-            raise serializers.ValidationError({"message": "Invalid email format", "status": "failed"})
+        except CustomValidation:
+            raise CustomValidation({"message": "Invalid email format", "status": "failed"})
         return attrs
 
 
@@ -132,9 +132,9 @@ class UpdateProfileSerializer(serializers.Serializer):
     def validate_phone_number(self, value):
         phone_number = value
         if not phone_number.startswith('+'):
-            raise ValidationError({"message": "Phone number must start with a plus sign (+)", "status": "failed"})
+            raise CustomValidation({"message": "Phone number must start with a plus sign (+)", "status": "failed"})
         if not phone_number[1:].isdigit():
-            raise ValidationError(
+            raise CustomValidation(
                     {"message": "Phone number must only contain digits after the plus sign (+)", "status": "failed"})
         return value
 
@@ -142,7 +142,7 @@ class UpdateProfileSerializer(serializers.Serializer):
         avatar = attrs.get('_avatar')
         max_size = 5 * 1024 * 1024  # 3MB in bytes
         if avatar.size > max_size:
-            raise ValidationError({"message": f"Image {avatar} size should be less than 5MB", "status": "failed"})
+            raise CustomValidation({"message": f"Image {avatar} size should be less than 5MB", "status": "failed"})
         return attrs
 
     def update(self, instance, validated_data):
@@ -168,14 +168,14 @@ class VerifyEmailSerializer(serializers.Serializer):
         email = attrs.get('email')
 
         if not code:
-            raise serializers.ValidationError({"message": "Code is required", "status": "failed"})
+            raise CustomValidation({"message": "Code is required", "status": "failed"})
 
         if not re.match("^[0-9]{4}$", str(code)):
-            raise serializers.ValidationError({"message": "Code must be a 4-digit number", "status": "failed"})
+            raise CustomValidation({"message": "Code must be a 4-digit number", "status": "failed"})
 
         try:
             validate_email(email)
-        except ValidationError:
-            raise serializers.ValidationError({"message": "Invalid email format", "status": "failed"})
+        except CustomValidation:
+            raise CustomValidation({"message": "Invalid email format", "status": "failed"})
 
         return attrs

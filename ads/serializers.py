@@ -3,6 +3,7 @@ from django_countries.serializer_fields import CountryField
 from rest_framework import serializers
 
 from ads.models import Ad, AdCategory
+from common.exceptions import CustomValidation
 
 
 class AdCategorySerializer(serializers.Serializer):
@@ -37,7 +38,7 @@ class CreateAdSerializer(serializers.Serializer):
 
     def validate_name(self, value):
         if Ad.objects.filter(name=value).exists():
-            raise serializers.ValidationError({"message": "An ad with this name already exists.", "status": "failed"})
+            raise CustomValidation({"message": "An ad with this name already exists.", "status": "failed"})
         return value
 
     def create(self, validated_data):
@@ -49,7 +50,7 @@ class CreateAdSerializer(serializers.Serializer):
         try:
             category = AdCategory.objects.get(id=category_id)
         except AdCategory.DoesNotExist:
-            raise serializers.ValidationError({"message": "Category does not exist", "status": "failed"})
+            raise CustomValidation({"message": "Category does not exist", "status": "failed"})
 
         # Create and return the new Ad instance
         return Ad.objects.create(ad_creator=creator, category=category, **validated_data)
