@@ -4,7 +4,7 @@ from django_countries.fields import CountryField
 
 from common.models import BaseModel
 from core.choices import GENDER_CHOICES
-from matrimonials.choices import CONNECTION_CHOICES, EDUCATION_CHOICES, RELIGION_CHOICES
+from matrimonials.choices import CONNECTION_CHOICES, CONNECTION_PENDING, EDUCATION_CHOICES, RELIGION_CHOICES
 
 User = get_user_model()
 
@@ -68,7 +68,7 @@ class ConnectionRequest(BaseModel):
     sender = models.ForeignKey(MatrimonialProfile, on_delete=models.CASCADE, related_name="connection_requests_sender")
     receiver = models.ForeignKey(MatrimonialProfile, on_delete=models.CASCADE,
                                  related_name="connection_requests_receiver")
-    status = models.CharField(max_length=1, choices=CONNECTION_CHOICES)
+    status = models.CharField(max_length=1, choices=CONNECTION_CHOICES, default=CONNECTION_PENDING)
 
     def __str__(self):
         return f"{self.sender} --- {self.receiver} --- {self.status}"

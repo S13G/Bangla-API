@@ -343,15 +343,8 @@ class ConnectionRequestListCreateView(GenericAPIView):
             },
     )
     def post(self, request):
-        user = self.request.user
-        try:
-            matrimonial_profile = MatrimonialProfile.objects.get(user=user)
-        except MatrimonialProfile.DoesNotExist:
-            return Response({"message": "Matrimonial profile does not exist", "status": "failed"},
-                            status=status.HTTP_404_NOT_FOUND)
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.serializer_class(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        serializer.save(sender=matrimonial_profile)
         return Response({"message": "Connection request created successfully", "status": "success"},
                         status=status.HTTP_201_CREATED)
 
@@ -483,7 +476,7 @@ class RetrieveConversationView(GenericAPIView):
             return Response({"message": "Conversation does not exist", "status": "success"},
                             status=status.HTTP_404_NOT_FOUND)
         else:
-            serializer = self.serializer_class(instance=conversation[0])
+            serializer = self.serializer_class(instance=conversation.get())
             return Response(
                     {"message": "Conversation fetched successfully", "data": serializer.data, "status": "success"},
                     status=status.HTTP_200_OK)
@@ -525,7 +518,7 @@ class CreateConversationView(GenericAPIView):
         conversation = Conversation.objects.filter(Q(initiator=initiator, receiver=participant) |
                                                    Q(initiator=participant, receiver=initiator))
         if conversation.exists():
-            return redirect(reverse('get_conversation', args=(conversation[0].id,)))
+            return redirect(reverse('get_conversation', args=(conversation.get().id,)))
         else:
             conversation = Conversation.objects.create(initiator=initiator, receiver=participant)
             serialized_data = ConversationSerializer(conversation).data

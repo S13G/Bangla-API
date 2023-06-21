@@ -59,7 +59,7 @@ class CreateMatrimonialProfileSerializer(serializers.Serializer):
 
 
 class MatrimonialProfileSerializer(serializers.Serializer):
-    full_name = serializers.CharField(source="user.full_name")
+    full_name = serializers.CharField(source="user.full_name", read_only=True)
     image = serializers.SerializerMethodField()
     short_bio = serializers.CharField()
     religion = serializers.CharField()
@@ -76,9 +76,9 @@ class MatrimonialProfileSerializer(serializers.Serializer):
 
 class ConnectionRequestSerializer(serializers.Serializer):
     id = serializers.UUIDField(read_only=True)
-    sender = serializers.UUIDField()
+    sender = serializers.UUIDField(source="matrimonial_profile.id", read_only=True)
     receiver = serializers.UUIDField()
-    status = serializers.ChoiceField(choices=CONNECTION_CHOICES)
+    status = serializers.ChoiceField(choices=CONNECTION_CHOICES, read_only=True)
     created = serializers.DateTimeField(read_only=True)
 
     def validate(self, attrs):
@@ -98,7 +98,18 @@ class ConnectionRequestSerializer(serializers.Serializer):
                     {"message": "Receiver matrimonial profile doesn't exist", "status": "failed"})
 
     def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['sender'] = str(
+                user.matrimonial_profile.id)  # Set the sender field with the logged-in user's UUID
         return ConnectionRequest.objects.create(**validated_data)
+
+    # once the method is patch, status field is editable
+    def get_fields(self):
+        fields = super().get_fields()
+        if self.context['request'].method == "PATCH":
+            fields['status'].read_only = False
+            fields['receiver'].read_only = True
+        return fields
 
     def update(self, instance, validated_data):
         instance.status = validated_data.get('status', instance.status)
@@ -121,6 +132,20 @@ class MessageSerializer(serializers.Serializer):
                     {"message": "Sender matrimonial profile doesn't exist", "status": "failed"})
 
 
+def validate_profiles(attrs):
+    initiator = attrs.get('initiator')
+    receiver = attrs.get('receiver')
+
+    try:
+        MatrimonialProfile.objects.get(id=initiator)
+        MatrimonialProfile.objects.get(id=receiver)
+    except MatrimonialProfile.DoesNotExist:
+        return serializers.ValidationError(
+                {"message": "Initiator or receiver matrimonial profile doesn't exist", "status": "failed"})
+
+    return attrs
+
+
 class ConversationListSerializer(serializers.Serializer):
     initiator = serializers.UUIDField()
     receiver = serializers.UUIDField()
@@ -132,20 +157,8 @@ class ConversationListSerializer(serializers.Serializer):
         return MessageSerializer(message)
 
     def validate(self, attrs):
-        initiator = attrs.get('initiator')
-        receiver = attrs.get('receiver')
-
-        try:
-            MatrimonialProfile.objects.get(id=initiator)
-        except MatrimonialProfile.DoesNotExist:
-            return serializers.ValidationError(
-                    {"message": "Initiator matrimonial profile doesn't exist", "status": "failed"})
-
-        try:
-            MatrimonialProfile.objects.get(id=receiver)
-        except MatrimonialProfile.DoesNotExist:
-            return serializers.ValidationError(
-                    {"message": "Receiver matrimonial profile doesn't exist", "status": "failed"})
+        attrs = validate_profiles(attrs)
+        return attrs
 
 
 class ConversationSerializer(serializers.Serializer):
@@ -154,17 +167,5 @@ class ConversationSerializer(serializers.Serializer):
     messages = MessageSerializer(many=True)
 
     def validate(self, attrs):
-        initiator = attrs.get('initiator')
-        receiver = attrs.get('receiver')
-
-        try:
-            MatrimonialProfile.objects.get(id=initiator)
-        except MatrimonialProfile.DoesNotExist:
-            return serializers.ValidationError(
-                    {"message": "Initiator matrimonial profile doesn't exist", "status": "failed"})
-
-        try:
-            MatrimonialProfile.objects.get(id=receiver)
-        except MatrimonialProfile.DoesNotExist:
-            return serializers.ValidationError(
-                    {"message": "Receiver matrimonial profile doesn't exist", "status": "failed"})
+        attrs = validate_profiles(attrs)
+        return attrs
