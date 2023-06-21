@@ -322,7 +322,7 @@ class ConnectionRequestListCreateView(GenericAPIView):
     )
     def get(self, request):
         connections = self.get_queryset()
-        serialized_connections = self.serializer_class(connections, many=True)
+        serialized_connections = self.serializer_class(connections, many=True).data
         return Response({"message": "All connection requests fetched successfully", "data": serialized_connections,
                          "status": "success"}, status=status.HTTP_200_OK)
 
