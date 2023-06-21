@@ -1,3 +1,5 @@
+import re
+
 from django.db import transaction
 from django_countries.serializer_fields import CountryField
 from rest_framework import serializers
@@ -24,11 +26,16 @@ class CreateMatrimonialProfileSerializer(serializers.Serializer):
     def validate(self, attrs):
         short_bio = attrs.get('short_bio')
         income = attrs.get('income')
+        height = attrs.get('height')
         if len(short_bio) < 10:
             raise serializers.ValidationError(
                     {"message": "Short bio should have at least 10 characters.", "status": "failed"})
         if income < 0:
             raise serializers.ValidationError({"message": "Income should be a positive value.", "status": "failed"})
+        pattern = r'^\d{1,2}\'\d{1,2}"$'  # regular exp pattern
+        if not re.match(pattern, height):
+            raise serializers.ValidationError(
+                    {"message": "Height should be in the format '5'4\"'.", "status": "failed"})
         return attrs
 
     @transaction.atomic
