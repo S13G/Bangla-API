@@ -59,6 +59,7 @@ class CreateMatrimonialProfileSerializer(serializers.Serializer):
 
 
 class MatrimonialProfileSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
     full_name = serializers.CharField(source="user.full_name")
     image = serializers.SerializerMethodField()
     short_bio = serializers.CharField()
