@@ -61,7 +61,7 @@ class Profile(BaseModel):
     description = models.TextField(blank=True)
     country = CountryField(null=True)
     language = models.CharField(max_length=255)
-    _avatar = models.ImageField(upload_to="customer_image/", help_text=_("The avatar image of the user."))
+    avatar = models.ImageField(upload_to="customer_image/", help_text=_("The avatar image of the user."))
 
     class Meta:
         verbose_name = "Profile"
@@ -71,9 +71,9 @@ class Profile(BaseModel):
         return self.user.full_name
 
     @property
-    def avatar(self):
-        if self._avatar is not None:
-            return self._avatar.url
+    def profile_avatar(self):
+        if self.avatar is not None:
+            return self.avatar.url
         return None
 
     @property

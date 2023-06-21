@@ -100,7 +100,7 @@ class RetrieveAdView(GenericAPIView):
             "description": ad.description,
             "price": ad.price,
             "location": ad.location.name,
-            "images": [image.image for image in ad.images.all()]
+            "images": [image.ad_image for image in ad.images.all()]
         }
         return Response({"message": "Ad fetched successfully", "data": data}, status=status.HTTP_200_OK)
 
@@ -166,7 +166,7 @@ class CreateAdsView(GenericAPIView):
                             status=status.HTTP_400_BAD_REQUEST)
         created_ad = serializer.save()
         serialized_data = AdSerializer(created_ad).data
-        ad_images = [AdImage(ad=created_ad, _image=image) for image in images]
+        ad_images = [AdImage(ad=created_ad, image=image) for image in images]
         AdImage.objects.bulk_create(ad_images)
         return Response({"message": "Ad created successfully", "data": serialized_data, "status": "success"},
                         status.HTTP_201_CREATED)
@@ -202,7 +202,7 @@ class RetrieveUserAdsView(GenericAPIView):
                 "created": ad.created,
                 "name": ad.name,
                 "price": ad.price,
-                "image": [image.image for image in ad.images.all()],
+                "image": [image.ad_image for image in ad.images.all()],
                 "is_active": ad.is_active
             }.copy()
             for ad in ads
@@ -316,7 +316,7 @@ class FavouriteAdListView(GenericAPIView):
             {
                 "name": a.ad.name,
                 "price": a.ad.price,
-                "images": [image.image for image in a.ad.images.all()]
+                "images": [image.ad_image for image in a.ad.images.all()]
             }.copy()
             for a in favourite_ads
         ]

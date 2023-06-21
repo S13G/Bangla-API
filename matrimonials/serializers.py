@@ -51,7 +51,7 @@ class CreateMatrimonialProfileSerializer(serializers.Serializer):
         profile = MatrimonialProfile.objects.create(user=user, **validated_data)
 
         matrimonial_images = [
-            MatrimonialProfileImage(matrimonial_profile=profile, _image=image)
+            MatrimonialProfileImage(matrimonial_profile=profile, image=image)
             for image in images
         ]
         MatrimonialProfileImage.objects.bulk_create(matrimonial_images)

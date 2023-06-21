@@ -15,15 +15,15 @@ User = get_user_model()
 
 class AdCategory(BaseModel):
     title = models.CharField(max_length=255)
-    _image = models.ImageField(upload_to="category_images/", null=True)
+    image = models.ImageField(upload_to="category_images/", null=True)
 
     class Meta:
         verbose_name_plural = "Ad Categories"
 
     @property
     def category_image(self):
-        if self._image is not None:
-            return self._image.url
+        if self.image is not None:
+            return self.image.url
         return None
 
     def __str__(self):
@@ -57,15 +57,15 @@ class Ad(BaseModel):
 
 class AdImage(BaseModel):
     ad = models.ForeignKey(Ad, on_delete=models.CASCADE, null=True, related_name="images")
-    _image = models.ImageField(upload_to="ad_images/", help_text=_("The image of a particular ad."))
+    image = models.ImageField(upload_to="ad_images/", help_text=_("The image of a particular ad."))
 
     def __str__(self):
         return self.ad.name
 
     @property
-    def image(self):
-        if self._image is not None:
-            return self._image.url
+    def ad_image(self):
+        if self.image is not None:
+            return self.image.url
         return None
 
 

@@ -9,7 +9,7 @@ from common.exceptions import CustomValidation
 class AdCategorySerializer(serializers.Serializer):
     id = serializers.UUIDField()
     title = serializers.CharField()
-    _image = serializers.ImageField()
+    image = serializers.ImageField()
 
 
 class AdSerializer(serializers.Serializer):
@@ -24,7 +24,7 @@ class AdSerializer(serializers.Serializer):
 
     @staticmethod
     def get_images(obj: Ad):
-        images = [image.image for image in obj.images.all()]
+        images = [image.ad_image for image in obj.images.all()]
         return images
 
 

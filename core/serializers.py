@@ -43,12 +43,12 @@ class LoginSerializer(serializers.Serializer):
 class ProfileSerializer(serializers.Serializer):
     full_name = serializers.CharField(source="user.full_name")
     email = serializers.EmailField(source="user.email")
-    _avatar = serializers.ImageField(validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])])
+    avatar = serializers.ImageField(validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])])
     country = CountryField()
     phone_number = serializers.CharField(source="user.phone_number")
 
-    def validate__avatar(self, attrs):
-        avatar = attrs.get('_avatar')
+    def validate_avatar(self, attrs):
+        avatar = attrs.get('avatar')
         max_size = 5 * 1024 * 1024  # 3MB in bytes
         if avatar.size > max_size:
             raise CustomValidation({"message": f"Image {avatar} size should be less than 5MB", "status": "failed"})
@@ -123,7 +123,7 @@ class ResendEmailVerificationSerializer(serializers.Serializer):
 class UpdateProfileSerializer(serializers.Serializer):
     full_name = serializers.CharField(source="user.full_name")
     email = serializers.EmailField(source="user.email", read_only=True)
-    _avatar = serializers.ImageField(validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])])
+    avatar = serializers.ImageField(validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])])
     description = serializers.CharField()
     country = CountryField()
     language = serializers.CharField()
@@ -138,8 +138,8 @@ class UpdateProfileSerializer(serializers.Serializer):
                     {"message": "Phone number must only contain digits after the plus sign (+)", "status": "failed"})
         return value
 
-    def validate__avatar(self, attrs):
-        avatar = attrs.get('_avatar')
+    def validate_avatar(self, attrs):
+        avatar = attrs.get('avatar')
         max_size = 5 * 1024 * 1024  # 3MB in bytes
         if avatar.size > max_size:
             raise CustomValidation({"message": f"Image {avatar} size should be less than 5MB", "status": "failed"})
