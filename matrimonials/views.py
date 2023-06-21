@@ -186,7 +186,7 @@ class BookmarkUsersMatrimonialProfile(GenericAPIView):
         try:
             matrimonial_profile = MatrimonialProfile.objects.get(id=matrimonial_profile_id)
         except MatrimonialProfile.DoesNotExist:
-            return Response({"message": "Invalid ad id", "status": "failed"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "Invalid matrimonial profile id", "status": "failed"}, status=status.HTTP_404_NOT_FOUND)
 
         matrimonial_profile, created = MatrimonialProfile.objects.get_or_create(user=user, profile=matrimonial_profile)
 
@@ -289,7 +289,7 @@ class FilterMatrimonialProfilesView(GenericAPIView):
             }.copy()
             for bp in queryset
         ]
-        return Response({"message": "Ads filtered successfully", "data": serialized_data, "status": "success"},
+        return Response({"message": "Matrimonial Profiles filtered successfully", "data": serialized_data, "status": "success"},
                         status.HTTP_200_OK)
 
 
