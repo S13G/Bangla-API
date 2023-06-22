@@ -1,6 +1,4 @@
 from django.db.models import Q
-from django.shortcuts import redirect
-from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status
@@ -9,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from matrimonials.filters import MatrimonialFilter
-from matrimonials.models import BookmarkedProfile, ConnectionRequest, Conversation, MatrimonialProfile
+from matrimonials.models import BookmarkedProfile, ConnectionRequest, Conversation, MatrimonialProfile, Message
 from matrimonials.serializers import ConnectionRequestSerializer, ConversationListSerializer, \
     ConversationSerializer, CreateMatrimonialProfileSerializer, \
     MatrimonialProfileSerializer
@@ -142,7 +140,10 @@ class RetrieveOtherUsersMatrimonialProfileView(GenericAPIView):
     )
     def get(self, request, *args, **kwargs):
         matrimonial_profile_id = self.kwargs.get('matrimonial_profile_id')
-        if matrimonial_profile_id is not None:
+        if matrimonial_profile_id is None:
+            return Response({"message": "Matrimonial Profile ID is required", "status": "failed"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
             try:
                 matrimonial_profile = MatrimonialProfile.objects.get(id=matrimonial_profile_id)
             except MatrimonialProfile.DoesNotExist:
@@ -151,9 +152,6 @@ class RetrieveOtherUsersMatrimonialProfileView(GenericAPIView):
             serialized_profile = MatrimonialProfileSerializer(matrimonial_profile).data
             return Response({"message": "Matrimonial profile retrieved successfully", "data": serialized_profile,
                              "status": "success"}, status=status.HTTP_200_OK)
-        else:
-            return Response({"message": "Matrimonial Profile ID is required", "status": "failed"},
-                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class BookmarkUsersMatrimonialProfile(GenericAPIView):
@@ -386,7 +384,10 @@ class ConnectionRequestRetrieveUpdateView(GenericAPIView):
     def patch(self, request, *args, **kwargs):
         user = self.request.user
         connection_request_id = self.kwargs.get('connection_request_id')
-        if connection_request_id is not None:
+        if connection_request_id is None:
+            return Response({"message": "Connection request id is required", "status": "failed"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
             try:
                 connection_request = ConnectionRequest.objects.get(id=connection_request_id)
             except ConnectionRequest.DoesNotExist:
@@ -401,13 +402,11 @@ class ConnectionRequestRetrieveUpdateView(GenericAPIView):
                                              context={"request": request})
             serializer.is_valid(raise_exception=True)
             serializer.save()
+
             return Response(
                     {"message": "Connection request updated successfully", "data": serializer.data,
                      "status": "success"},
                     status=status.HTTP_202_ACCEPTED)
-        else:
-            return Response({"message": "Connection request id is required", "status": "failed"},
-                            status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
             summary="Deletes a Connection Request",
@@ -428,19 +427,25 @@ class ConnectionRequestRetrieveUpdateView(GenericAPIView):
             },
     )
     def delete(self, request, *args, **kwargs):
+        user = self.request.user
         connection_request_id = self.kwargs.get('connection_request_id')
-        if connection_request_id is not None:
+        if connection_request_id is None:
+            return Response({"message": "Connection request id is required", "status": "failed"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
             try:
                 connection_request = ConnectionRequest.objects.get(id=connection_request_id)
             except ConnectionRequest.DoesNotExist:
                 return Response({"message": "Connection request does not exist", "status": "failed"},
                                 status=status.HTTP_404_NOT_FOUND)
+            receiver = connection_request.receiver.user
+            if user != receiver:
+                return Response(
+                        {"message": "Only the receiver can delete the connection request", "status": "failed"},
+                        status=status.HTTP_406_NOT_ACCEPTABLE)
             connection_request.delete()
             return Response({"message": "Connection request deleted successfully", "status": "failed"},
                             status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response({"message": "Connection request id is required", "status": "failed"},
-                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class ConversationsListView(GenericAPIView):
@@ -460,8 +465,8 @@ class ConversationsListView(GenericAPIView):
             },
     )
     def get(self, request):
-        conversation_list = Conversation.objects.filter(Q(initiator=self.request.user) |
-                                                        Q(receiver=self.request.user))
+        conversation_list = Conversation.objects.filter(Q(initiator=self.request.user.matrimonial_profile) |
+                                                        Q(receiver=self.request.user.matrimonial_profile))
         serializer = ConversationListSerializer(instance=conversation_list, many=True)
         return Response(
                 {"message": "Conversation list fetched successfully", "data": serializer.data, "status": "success"},
@@ -511,6 +516,7 @@ class CreateConversationView(GenericAPIView):
             """
             This endpoint creates a conversation.
             """,
+            parameters=[OpenApiParameter(name="participant_id", description="Enter participant id", required=True)],
             responses={
                 status.HTTP_200_OK: OpenApiResponse(
                         description="Conversation created successfully",
@@ -522,25 +528,15 @@ class CreateConversationView(GenericAPIView):
             },
     )
     def post(self, request, *args, **kwargs):
-        participant_id = self.kwargs.get('participant_id')
-        try:
-            initiator = MatrimonialProfile.objects.get(user=self.request.user)
-        except MatrimonialProfile.DoesNotExist:
-            return Response({"message": "Matrimonial profile does not exist", "status": "failed"},
-                            status=status.HTTP_404_NOT_FOUND)
-        try:
-            participant = MatrimonialProfile.objects.get(user=participant_id)
-        except MatrimonialProfile.DoesNotExist:
-            return Response({"message": "You cannot chat with a non existent user", "status": "failed"},
-                            status=status.HTTP_404_NOT_FOUND)
+        serializer = self.serializer_class(data=request.data, context={"request": request})
+        serializer.is_valid()
+        conversation = serializer.save()
+        initiator = conversation.initiator
 
-        conversation = Conversation.objects.filter(Q(initiator=initiator, receiver=participant) |
-                                                   Q(initiator=participant, receiver=initiator))
-        if conversation.exists():
-            return redirect(reverse('get_conversation', args=(conversation.get().id,)))
-        else:
-            conversation = Conversation.objects.create(initiator=initiator, receiver=participant)
-            serialized_data = ConversationSerializer(conversation).data
-            return Response(
-                    {"message": "Conversation created successfully", "data": serialized_data, "status": "success"},
-                    status=status.HTTP_201_CREATED)
+        # Create a message indicating the conversation initiation
+        initial_message = Message.objects.create(sender=initiator, text="Conversation initiated")
+        conversation.messages.add(initial_message)
+
+        serializer = self.serializer_class(conversation)
+        return Response({"message": "Conversation created successfully", "data": serializer.data, "status": "success"},
+                        status=status.HTTP_201_CREATED)

@@ -1,6 +1,7 @@
 import re
 
 from django.db import transaction
+from django.db.models import Q
 from django_countries.serializer_fields import CountryField
 from rest_framework import serializers
 
@@ -107,15 +108,23 @@ class ConnectionRequestSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         instance.status = validated_data.get('status', instance.status)
-        print(instance.status)
+        instance.save()
         if instance.status == 'R':
             instance.delete()
-        instance.save()
+            return instance
+
+        if instance.status == 'A':
+            # Create a new Conversation instance and add it to ConversationListSerializer
+            conversation = Conversation.objects.create(initiator=instance.sender, receiver=instance.receiver)
+            conversation_serializer = ConversationListSerializer(conversation)
+
+            instance.delete()
+            return conversation_serializer.data
         return instance
 
 
 class MessageSerializer(serializers.Serializer):
-    sender = serializers.UUIDField()
+    sender = serializers.UUIDField(source="sender.id", read_only=True)
     text = serializers.CharField()
     attachment = serializers.FileField(allow_empty_file=True, required=False)
 
@@ -144,6 +153,7 @@ def validate_profiles(attrs):
 
 
 class ConversationListSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
     initiator = serializers.UUIDField()
     receiver = serializers.UUIDField()
     last_message = serializers.SerializerMethodField()
@@ -151,6 +161,8 @@ class ConversationListSerializer(serializers.Serializer):
     @staticmethod
     def get_last_message(obj: Conversation):
         message = obj.messages.first()
+        if message is None:
+            return ''
         return MessageSerializer(message)
 
     def validate(self, attrs):
@@ -159,10 +171,31 @@ class ConversationListSerializer(serializers.Serializer):
 
 
 class ConversationSerializer(serializers.Serializer):
-    initiator = serializers.UUIDField()
+    initiator = serializers.UUIDField(read_only=True)
     receiver = serializers.UUIDField()
     messages = MessageSerializer(many=True)
 
     def validate(self, attrs):
         attrs = validate_profiles(attrs)
         return attrs
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        initiator = user.matrimonial_profile
+        receiver_id = validated_data.get('receiver')
+        try:
+            receiver = MatrimonialProfile.objects.get(id=receiver_id)
+        except MatrimonialProfile.DoesNotExist:
+            raise CustomValidation({"message": "Receiver matrimonial profile doesn't exist", "status": "failed"})
+
+            # Check if a conversation already exists between the initiator and receiver
+        existing_conversation = Conversation.objects.filter(
+                (Q(initiator=initiator) & Q(receiver=receiver)) |
+                (Q(initiator=receiver) & Q(receiver=initiator))
+        ).first()
+
+        if existing_conversation:
+            raise CustomValidation({"message": "Conversation already exists",
+                                    "data": ConversationSerializer(existing_conversation).data, "status": "failed"})
+
+        return Conversation.objects.create(initiator=initiator, receiver=receiver)
