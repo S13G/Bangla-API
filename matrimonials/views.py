@@ -301,7 +301,6 @@ class FilterMatrimonialProfilesView(GenericAPIView):
 
 class ConnectionRequestListCreateView(GenericAPIView):
     permission_classes = [IsAuthenticated]
-    queryset = ConnectionRequest.objects.all()
     serializer_class = ConnectionRequestSerializer
 
     @extend_schema(
@@ -321,11 +320,21 @@ class ConnectionRequestListCreateView(GenericAPIView):
             },
     )
     def get(self, request):
-        connections = self.get_queryset()
-        serialized_connections = self.serializer_class(connections, many=True, context={"request": request}
-                                                       ).data
-        return Response({"message": "All connection requests fetched successfully", "data": serialized_connections,
-                         "status": "success"}, status=status.HTTP_200_OK)
+        user = request.user
+        sent_requests = ConnectionRequest.objects.filter(sender=user.matrimonial_profile)
+        received_requests = ConnectionRequest.objects.filter(receiver=user.matrimonial_profile)
+        serialized_sent_requests = self.serializer_class(sent_requests, many=True, context={"request": request}).data
+        serialized_received_requests = self.serializer_class(received_requests, many=True,
+                                                             context={"request": request}).data
+        return Response(
+                {
+                    "message": "All connection requests fetched successfully",
+                    "sent_requests": serialized_sent_requests,
+                    "received_requests": serialized_received_requests,
+                    "status": "success"
+                },
+                status=status.HTTP_200_OK
+        )
 
     @extend_schema(
             summary="Create Connection Request",
@@ -393,7 +402,8 @@ class ConnectionRequestRetrieveUpdateView(GenericAPIView):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(
-                    {"message": "Connection request updated successfully", "data": serializer.data, "status": "success"},
+                    {"message": "Connection request updated successfully", "data": serializer.data,
+                     "status": "success"},
                     status=status.HTTP_202_ACCEPTED)
         else:
             return Response({"message": "Connection request id is required", "status": "failed"},

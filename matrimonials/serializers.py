@@ -107,6 +107,9 @@ class ConnectionRequestSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         instance.status = validated_data.get('status', instance.status)
+        print(instance.status)
+        if instance.status == 'R':
+            instance.delete()
         instance.save()
         return instance
 

@@ -26,7 +26,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+    email = serializers.CharField()
     password = serializers.CharField(max_length=150, min_length=6, write_only=True)
 
     def validate(self, attrs):
@@ -34,7 +34,7 @@ class LoginSerializer(serializers.Serializer):
 
         try:
             validate_email(email)
-        except CustomValidation:
+        except Exception:
             raise CustomValidation({"message": "Invalid email format", "status": "failed"})
 
         return attrs
@@ -42,7 +42,7 @@ class LoginSerializer(serializers.Serializer):
 
 class ProfileSerializer(serializers.Serializer):
     full_name = serializers.CharField(source="user.full_name")
-    email = serializers.EmailField(source="user.email")
+    email = serializers.CharField(source="user.email")
     avatar = serializers.ImageField(validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])])
     country = CountryField()
     phone_number = serializers.CharField(source="user.phone_number")
@@ -65,7 +65,7 @@ class ProfileSerializer(serializers.Serializer):
 
 
 class RegisterSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+    email = serializers.CharField()
     full_name = serializers.CharField()
     phone_number = serializers.CharField()
     password = serializers.CharField(min_length=6, write_only=True)
@@ -80,7 +80,7 @@ class RegisterSerializer(serializers.Serializer):
 
         try:
             validate_email(email)
-        except CustomValidation:
+        except Exception:
             raise CustomValidation({"message": "Invalid email format", "status": "failed"})
 
         if not full_name:
@@ -98,34 +98,34 @@ class RegisterSerializer(serializers.Serializer):
 
 
 class RequestNewPasswordCodeSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+    email = serializers.CharField()
 
     def validate(self, attrs):
         email = attrs.get('email')
 
         try:
             validate_email(email)
-        except CustomValidation:
+        except Exception:
             raise CustomValidation({"message": "Invalid email format", "status": "failed"})
         return attrs
 
 
 class ResendEmailVerificationSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+    email = serializers.CharField()
 
     def validate(self, attrs):
         email = attrs.get('email')
 
         try:
             validate_email(email)
-        except CustomValidation:
+        except Exception:
             raise CustomValidation({"message": "Invalid email format", "status": "failed"})
         return attrs
 
 
 class UpdateProfileSerializer(serializers.Serializer):
     full_name = serializers.CharField(source="user.full_name")
-    email = serializers.EmailField(source="user.email", read_only=True)
+    email = serializers.CharField(source="user.email", read_only=True)
     avatar = serializers.ImageField(validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])])
     description = serializers.CharField()
     country = CountryField()
@@ -164,7 +164,7 @@ class UpdateProfileSerializer(serializers.Serializer):
 
 class VerifyEmailSerializer(serializers.Serializer):
     code = serializers.IntegerField()
-    email = serializers.EmailField()
+    email = serializers.CharField()
 
     def validate(self, attrs):
         code = attrs.get('code')
