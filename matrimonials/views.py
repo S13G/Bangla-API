@@ -322,7 +322,8 @@ class ConnectionRequestListCreateView(GenericAPIView):
     )
     def get(self, request):
         connections = self.get_queryset()
-        serialized_connections = self.serializer_class(connections, many=True).data
+        serialized_connections = self.serializer_class(connections, many=True, context={"request": request}
+                                                       ).data
         return Response({"message": "All connection requests fetched successfully", "data": serialized_connections,
                          "status": "success"}, status=status.HTTP_200_OK)
 
@@ -384,7 +385,8 @@ class ConnectionRequestRetrieveUpdateView(GenericAPIView):
         else:
             return Response({"message": "Connection request id is required", "status": "failed"},
                             status=status.HTTP_400_BAD_REQUEST)
-        serializer = self.get_serializer(connection_request, data=request.data, partial=True)
+        serializer = self.get_serializer(connection_request, data=request.data, partial=True,
+                                         context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(

@@ -77,25 +77,31 @@ class MatrimonialProfileSerializer(serializers.Serializer):
 
 class ConnectionRequestSerializer(serializers.Serializer):
     id = serializers.UUIDField(read_only=True)
-    sender = serializers.UUIDField(source="message_sender.id", read_only=True)
+    sender = serializers.UUIDField(read_only=True)
     receiver = serializers.UUIDField()
     status = serializers.ChoiceField(choices=CONNECTION_CHOICES, read_only=True)
     created = serializers.DateTimeField(read_only=True)
 
     def validate(self, attrs):
         receiver = attrs.get('receiver')
+        print(receiver)
 
         try:
             MatrimonialProfile.objects.get(id=receiver)
         except MatrimonialProfile.DoesNotExist:
-            return CustomValidation(
+            raise CustomValidation(
                     {"message": "Receiver matrimonial profile doesn't exist", "status": "failed"})
         return attrs
 
     def create(self, validated_data):
+        user = self.context['request'].user
+        sender = user.matrimonial_profile
         receiver_id = validated_data.pop('receiver')
         receiver = MatrimonialProfile.objects.get(id=receiver_id)
+        validated_data['sender'] = sender
         validated_data['receiver'] = receiver
+        if ConnectionRequest.objects.filter(sender=sender, receiver=receiver).exists():
+            raise CustomValidation({"message": "Connection request already made", "status": "failed"})
         return ConnectionRequest.objects.create(**validated_data)
 
     # once the method is patch, status field is editable
