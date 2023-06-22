@@ -82,22 +82,15 @@ class ConnectionRequestSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=CONNECTION_CHOICES, read_only=True)
     created = serializers.DateTimeField(read_only=True)
 
-    def validate(self, attrs):
-        receiver = attrs.get('receiver')
-        print(receiver)
-
-        try:
-            MatrimonialProfile.objects.get(id=receiver)
-        except MatrimonialProfile.DoesNotExist:
-            raise CustomValidation(
-                    {"message": "Receiver matrimonial profile doesn't exist", "status": "failed"})
-        return attrs
-
     def create(self, validated_data):
         user = self.context['request'].user
         sender = user.matrimonial_profile
         receiver_id = validated_data.pop('receiver')
-        receiver = MatrimonialProfile.objects.get(id=receiver_id)
+        try:
+            receiver = MatrimonialProfile.objects.get(id=receiver_id)
+        except MatrimonialProfile.DoesNotExist:
+            raise CustomValidation(
+                    {"message": "Receiver matrimonial profile doesn't exist", "status": "failed"})
         validated_data['sender'] = sender
         validated_data['receiver'] = receiver
         if ConnectionRequest.objects.filter(sender=sender, receiver=receiver).exists():

@@ -251,7 +251,7 @@ class FilterMatrimonialProfilesView(GenericAPIView):
     queryset = MatrimonialProfile.objects.all()
 
     @extend_schema(
-            summary="Matrimonial Profile List",
+            summary="Filter Matrimonial Profile List",
             description=
             """
             This endpoint retrieves a list of filtered matrimonial profile.
@@ -359,7 +359,7 @@ class ConnectionRequestRetrieveUpdateView(GenericAPIView):
             summary="Updates a Connection Request",
             description=
             """
-            This endpoint updates a connection requests.
+            This endpoint allows only the receiver to update a connection requests.
             """,
             responses={
                 status.HTTP_202_ACCEPTED: OpenApiResponse(
@@ -375,6 +375,7 @@ class ConnectionRequestRetrieveUpdateView(GenericAPIView):
             },
     )
     def patch(self, request, *args, **kwargs):
+        user = self.request.user
         connection_request_id = self.kwargs.get('connection_request_id')
         if connection_request_id is not None:
             try:
@@ -382,16 +383,21 @@ class ConnectionRequestRetrieveUpdateView(GenericAPIView):
             except ConnectionRequest.DoesNotExist:
                 return Response({"message": "Connection request does not exist", "status": "failed"},
                                 status=status.HTTP_404_NOT_FOUND)
+            receiver = connection_request.receiver.user
+            if user != receiver:
+                return Response(
+                        {"message": "Only the receiver can change the status of the request", "status": "failed"},
+                        status=status.HTTP_406_NOT_ACCEPTABLE)
+            serializer = self.get_serializer(connection_request, data=request.data, partial=True,
+                                             context={"request": request})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(
+                    {"message": "Connection request updated successfully", "data": serializer.data, "status": "success"},
+                    status=status.HTTP_202_ACCEPTED)
         else:
             return Response({"message": "Connection request id is required", "status": "failed"},
                             status=status.HTTP_400_BAD_REQUEST)
-        serializer = self.get_serializer(connection_request, data=request.data, partial=True,
-                                         context={"request": request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(
-                {"message": "Connection request updated successfully", "data": serializer.data, "status": "failed"},
-                status=status.HTTP_202_ACCEPTED)
 
     @extend_schema(
             summary="Deletes a Connection Request",
@@ -419,12 +425,12 @@ class ConnectionRequestRetrieveUpdateView(GenericAPIView):
             except ConnectionRequest.DoesNotExist:
                 return Response({"message": "Connection request does not exist", "status": "failed"},
                                 status=status.HTTP_404_NOT_FOUND)
+            connection_request.delete()
+            return Response({"message": "Connection request deleted successfully", "status": "failed"},
+                            status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({"message": "Connection request id is required", "status": "failed"},
                             status=status.HTTP_400_BAD_REQUEST)
-        connection_request.delete()
-        return Response({"message": "Connection request deleted successfully", "status": "failed"},
-                        status=status.HTTP_204_NO_CONTENT)
 
 
 class ConversationsListView(GenericAPIView):
