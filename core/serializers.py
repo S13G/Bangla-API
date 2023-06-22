@@ -75,6 +75,9 @@ class RegisterSerializer(serializers.Serializer):
         full_name = attrs.get('full_name')
         phone_number = attrs.get('phone_number')
 
+        if User.objects.filter(email=email).exists():
+            raise CustomValidation({"message": "User with this email address already exists", "status": "failed"})
+
         try:
             validate_email(email)
         except CustomValidation:
