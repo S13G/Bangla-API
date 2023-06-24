@@ -260,7 +260,6 @@ class RegisterView(GenericAPIView):
 
 
 class RequestNewPasswordCodeView(GenericAPIView):
-    permission_classes = (IsAuthenticated,)
     serializer_class = RequestNewPasswordCodeSerializer
     throttle_classes = [UserRateThrottle]
 
