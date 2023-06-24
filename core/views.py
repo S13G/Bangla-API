@@ -108,9 +108,8 @@ class LoginView(TokenObtainPairView):
         tokens = super().post(request)
 
         return Response({"message": "Logged in successfully", "tokens": tokens.data,
-                         "data": {"email": user.email, "full_name": user.full_name, "phone_number": user.phone_number},
-                         "status": "success"},
-                        status=status.HTTP_200_OK)
+                         "data": {"email": user.email, "full_name": user.full_name, "phone_number": user.phone_number,
+                                  "verified": user.is_verified}, "status": "success"}, status=status.HTTP_200_OK)
 
 
 class LogoutView(TokenBlacklistView):
