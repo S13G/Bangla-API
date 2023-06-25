@@ -258,7 +258,7 @@ class RetrieveUserAdsView(GenericAPIView):
                         status=status.HTTP_200_OK)
 
 
-class UpdateDeleteUserAdView(GenericAPIView):
+class UpdateUserAdView(GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = CreateAdSerializer
 
@@ -268,9 +268,11 @@ class UpdateDeleteUserAdView(GenericAPIView):
             """
             Update user ad.
             """,
+            request=CreateAdSerializer,
             responses={
                 status.HTTP_202_ACCEPTED: OpenApiResponse(
                         description="Ad successfully updated",
+                        response=AdSerializer
                 ),
                 status.HTTP_404_NOT_FOUND: OpenApiResponse(
                         description="This ad does not exist, try again",
@@ -289,11 +291,19 @@ class UpdateDeleteUserAdView(GenericAPIView):
         ad = Ad.objects.filter(ad_creator=creator, id=ad_id)
         if ad.exists():
             ad = ad.get()
-            serializer = self.serializer_class
+            serializer = self.serializer_class(ad, data=self.request.data, partial=True, context={"request": request})
+            serializer.is_valid(raise_exception=True)
+            updated_data = serializer.save()
+            serialized_data = AdSerializer(updated_data).data
+            return Response({"message": "Ad updated successfully", "data": serialized_data, "status": "success"},
+                            status=status.HTTP_202_ACCEPTED)
         else:
             return Response({"message": "Ad with this id does not exist", "status": "failed"},
                             status=status.HTTP_404_NOT_FOUND)
 
+
+class DeleteUserAdView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
             summary="Remove Ad",

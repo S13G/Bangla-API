@@ -44,7 +44,10 @@ class CreateAdSerializer(serializers.Serializer):
 
     def get_fields(self):
         fields = super().get_fields()
-        if self.context['request'].method != "PATCH":
+        if self.context['request'].method == "PATCH":
+            fields['featured'].read_only = True
+            fields['is_approved'].read_only = True
+        else:
             fields['status'].read_only = True
             fields['featured'].read_only = True
             fields['is_approved'].read_only = True
