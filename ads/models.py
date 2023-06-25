@@ -4,7 +4,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_countries.fields import CountryField
 
-from ads.choices import CONDITION_CHOICES
+from ads.choices import CONDITION_CHOICES, STATUS_CHOICES, STATUS_PENDING
 from common.models import BaseModel
 
 User = get_user_model()
@@ -49,7 +49,8 @@ class Ad(BaseModel):
     location = CountryField()
     category = models.ForeignKey(AdCategory, on_delete=models.CASCADE, null=True, related_name="ads")
     featured = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)
+    status = models.CharField(max_length=2, choices=STATUS_CHOICES, default=STATUS_PENDING, null=True)
 
     def __str__(self):
         return str(self.name)

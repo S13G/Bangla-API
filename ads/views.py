@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 
+from ads.choices import STATUS_ACTIVE
 from ads.filters import AdFilter
 from ads.mixins import AdsByCategoryMixin
 from ads.models import Ad, AdCategory, AdImage, FavouriteAd
@@ -14,6 +15,47 @@ from ads.serializers import AdCategorySerializer, AdSerializer, CreateAdSerializ
 
 
 # Create your views here.
+
+class RetrieveAllApprovedActiveAdsView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    @extend_schema(
+            summary="Get all ads",
+            description=
+            """
+            Retrieve list of all ads approved and made active by client.
+            """,
+            responses={
+                status.HTTP_200_OK: OpenApiResponse(
+                        description="Ad successfully fetched",
+                        response=AdSerializer,
+                ),
+            }
+    )
+    def get(request):
+        all_ads = Ad.objects.filter(is_approved=True, status=STATUS_ACTIVE)
+        data = [
+            {
+                "name": ad.name,
+                "description": ad.description,
+                "price": ad.price,
+                "location": ad.location,
+                "category": {
+                    "id": ad.category.id,
+                    "title": ad.category.title
+                },
+                "images": [image.ad_image for image in ad.images.all()],
+                "featured": ad.featured,
+                "is_approved": ad.is_approved,
+                "status": ad.status,
+            }
+            for ad in all_ads
+        ]
+        return Response(
+                {"message": "Ads retrieved successfully", "data": data, "status": "success"},
+                status=status.HTTP_200_OK)
+
 
 class AdsCategoryView(AdsByCategoryMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
@@ -35,8 +77,8 @@ class AdsCategoryView(AdsByCategoryMixin, GenericAPIView):
     def get(self, request):
         ad_categories = AdCategory.objects.all()
         serializer = AdCategorySerializer(ad_categories, many=True)
-        featured_ads = Ad.objects.select_related('category').filter(featured=True, is_active=True)
-        print(featured_ads)
+        featured_ads = Ad.objects.select_related('category').filter(featured=True, is_approved=True,
+                                                                    status=STATUS_ACTIVE)
         serialized_featured_ads = AdSerializer(featured_ads, many=True)
         count_featured_ads = featured_ads.count()
         all_ads_by_category = []
@@ -100,7 +142,10 @@ class RetrieveAdView(GenericAPIView):
             "description": ad.description,
             "price": ad.price,
             "location": ad.location.name,
-            "images": [image.ad_image for image in ad.images.all()]
+            "images": [image.ad_image for image in ad.images.all()],
+            "featured": ad.featured,
+            "is_approved": ad.is_approved,
+            "status": ad.status,
         }
         return Response({"message": "Ad fetched successfully", "data": data}, status=status.HTTP_200_OK)
 
@@ -111,7 +156,7 @@ class FilteredAdsListView(ListAPIView):
     filterset_class = AdFilter
     filter_backends = [DjangoFilterBackend, SearchFilter]
     search_fields = ['name', 'description', 'category__title', 'price']
-    queryset = Ad.objects.filter(is_active=True)
+    queryset = Ad.objects.filter(is_approved=True, status=STATUS_ACTIVE)
 
     @extend_schema(
             summary="Filtered Ads List",
@@ -203,7 +248,8 @@ class RetrieveUserAdsView(GenericAPIView):
                 "name": ad.name,
                 "price": ad.price,
                 "image": [image.ad_image for image in ad.images.all()],
-                "is_active": ad.is_active
+                "is_approved": ad.is_approved,
+                "status": ad.status
             }.copy()
             for ad in ads
         ]
@@ -212,8 +258,42 @@ class RetrieveUserAdsView(GenericAPIView):
                         status=status.HTTP_200_OK)
 
 
-class DeleteUserAdView(GenericAPIView):
+class UpdateDeleteUserAdView(GenericAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = CreateAdSerializer
+
+    @extend_schema(
+            summary="Update Ad",
+            description=
+            """
+            Update user ad.
+            """,
+            responses={
+                status.HTTP_202_ACCEPTED: OpenApiResponse(
+                        description="Ad successfully updated",
+                ),
+                status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                        description="This ad does not exist, try again",
+                ),
+                status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                        description="Ad ID is required",
+                ),
+            }
+    )
+    def patch(self, request, *args, **kwargs):
+        creator = self.request.user
+        ad_id = self.kwargs.get('ad_id')
+        if ad_id is None:
+            return Response({"message": "Ad ID is required", "status": "success"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        ad = Ad.objects.filter(ad_creator=creator, id=ad_id)
+        if ad.exists():
+            ad = ad.get()
+            serializer = self.serializer_class
+        else:
+            return Response({"message": "Ad with this id does not exist", "status": "failed"},
+                            status=status.HTTP_404_NOT_FOUND)
+
 
     @extend_schema(
             summary="Remove Ad",

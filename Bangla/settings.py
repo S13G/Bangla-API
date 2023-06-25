@@ -172,7 +172,7 @@ CHANNEL_LAYERS = {
 
 DATABASES = {
     'default': dj_database_url.config(
-            default="mysql://s13g:S13G2£@localhost:3306/bangla",
+            default="mysql://rana:rana123@localhost:3306/bangla",
             conn_max_age=600,
             conn_health_checks=True,
     )

@@ -20,8 +20,8 @@ class AdImageAdmin(TabularInline):
 @admin.register(Ad)
 class AdAdmin(admin.ModelAdmin):
     inlines = (AdImageAdmin,)
-    list_display = ('name', 'ad_creator', 'price', 'category', 'location', 'featured', 'is_active')
-    list_editable = ('featured', 'is_active',)
+    list_display = ('name', 'ad_creator', 'price', 'category', 'location', 'featured', 'is_approved')
+    list_editable = ('featured', 'is_approved',)
     list_filter = ('name', 'price', 'category', 'location')
     list_per_page = 20
     ordering = ('name', 'category', 'ad_creator')

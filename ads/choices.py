@@ -15,3 +15,15 @@ PAYMENT_STATUS = (
     (PAYMENT_COMPLETE, "Complete"),
     (PAYMENT_FAILED, "Failed"),
 )
+
+STATUS_PENDING = "P"
+STATUS_PAUSED = "PA"
+STATUS_ACTIVE = "A"
+STATUS_DENIED = "D"
+
+STATUS_CHOICES = (
+    (STATUS_PAUSED, "Paused"),
+    (STATUS_DENIED, "Denied"),
+    (STATUS_PENDING, "Pending"),
+    (STATUS_ACTIVE, "Active"),
+)
