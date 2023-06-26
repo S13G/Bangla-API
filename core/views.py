@@ -100,7 +100,7 @@ class LoginView(TokenObtainPairView):
         user = authenticate(request, email=email, password=password)
         if not user:
             return Response({"message": "Invalid credentials", "status": "failed"}, status=status.HTTP_400_BAD_REQUEST)
-        if not user.is_approved:
+        if not user.is_verified:
             return Response({"message": "Account is not active, contact the admin", "status": "failed"},
                             status=status.HTTP_400_BAD_REQUEST)
 
