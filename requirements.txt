@@ -27,6 +27,7 @@ django-countries==7.5.1
 django-filter==23.1
 django-jazzmin==2.6.0
 django-rest-framework==0.1.0
+django-shortcuts==1.6
 django_debug_toolbar==3.8.1
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.2.2

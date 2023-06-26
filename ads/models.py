@@ -1,10 +1,10 @@
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator
+from django.core.validators import FileExtensionValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_countries.fields import CountryField
 
-from ads.choices import CONDITION_CHOICES, STATUS_CHOICES, STATUS_PENDING
+from ads.choices import STATUS_CHOICES, STATUS_PENDING
 from common.models import BaseModel
 
 User = get_user_model()
@@ -15,7 +15,10 @@ User = get_user_model()
 
 class AdCategory(BaseModel):
     title = models.CharField(max_length=255)
-    image = models.ImageField(upload_to="category_images/", null=True)
+    image = models.FileField(
+            upload_to="category_images/", null=True,
+            validators=[FileExtensionValidator(['jpg', 'jpeg', 'png', 'gif', 'svg'])], default=None
+    )
 
     class Meta:
         verbose_name_plural = "Ad Categories"
@@ -58,7 +61,7 @@ class Ad(BaseModel):
 
 class AdImage(BaseModel):
     ad = models.ForeignKey(Ad, on_delete=models.CASCADE, null=True, related_name="images")
-    image = models.ImageField(upload_to="ad_images/", help_text=_("The image of a particular ad."))
+    image = models.ImageField(upload_to="ad_images/", help_text=_("The image of a particular ad."), default=None)
 
     def __str__(self):
         return self.ad.name
