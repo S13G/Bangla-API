@@ -46,12 +46,12 @@ class ConversationConsumer(WebsocketConsumer):
                 return_dict,
         )
 
-    # Receive message from room group
+    # Receive messages from room group
     def conversation_message(self, event):
         text_data_json = event.copy()
         text_data_json.pop("type")
         message, attachment = (
-            text_data_json["message"],
+            text_data_json["conversation_message"],
             text_data_json.get("attachment"),
         )
 
