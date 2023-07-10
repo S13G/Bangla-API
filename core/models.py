@@ -61,7 +61,7 @@ class Profile(BaseModel):
     description = models.TextField(blank=True)
     country = CountryField(null=True)
     language = models.CharField(max_length=255)
-    avatar = models.URLField(help_text=_("The avatar image of the user."), null=True)
+    avatar = models.URLField(help_text=_("The avatar image of the user."), blank=True)
 
     class Meta:
         verbose_name = "Profile"

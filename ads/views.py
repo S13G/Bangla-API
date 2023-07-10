@@ -29,7 +29,7 @@ class RetrieveAllApprovedActiveAdsView(GenericAPIView):
             responses={
                 status.HTTP_200_OK: OpenApiResponse(
                         description="Ad successfully fetched",
-                        response=AdSerializer,
+                        response=AdSerializer(many=True),
                 ),
             }
     )
@@ -70,7 +70,7 @@ class AdsCategoryView(AdsByCategoryMixin, GenericAPIView):
             responses={
                 status.HTTP_200_OK: OpenApiResponse(
                         description="Ad successfully fetched",
-                        response=[AdCategorySerializer, AdSerializer]
+                        response=AdSerializer(many=True)
                 ),
             }
     )
@@ -100,6 +100,42 @@ class AdsCategoryView(AdsByCategoryMixin, GenericAPIView):
             "all_ads_by_category": all_ads_by_category,
         }
         return Response({"message": "Fetched successfully", "data": data, "status": "success"},
+                        status=status.HTTP_200_OK)
+
+
+class RetrieveAllCategoriesAndSubcategories(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = AdCategory.objects.all()
+
+    @extend_schema(
+            summary="Categories and Sub-Categories",
+            description=
+            """
+            Get all categories and sub-categories.
+            """,
+            responses={
+                status.HTTP_200_OK: OpenApiResponse(
+                        description="Ad successfully fetched",
+                        response=AdCategorySerializer(many=True)
+                ),
+            }
+    )
+    def get(self, request):
+        categories = self.get_queryset()
+        serialized_data = [
+            {
+                "title": category.title,
+                "sub_category": [
+                    {
+                        "title": sub_category.title
+                    }
+                    for sub_category in category.sub_categories.all()
+                ],
+                "image": category.image,
+            }
+            for category in categories
+        ]
+        return Response({"message": "Fetched successfully", "data": serialized_data, "status": "success"},
                         status=status.HTTP_200_OK)
 
 

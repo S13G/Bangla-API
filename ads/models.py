@@ -15,7 +15,7 @@ User = get_user_model()
 
 class AdCategory(BaseModel):
     title = models.CharField(max_length=255)
-    image = models.FileField(
+    image = models.ImageField(
             upload_to="category_images/", null=True,
             validators=[FileExtensionValidator(['jpg', 'jpeg', 'png', 'gif', 'svg'])], default=None
     )
